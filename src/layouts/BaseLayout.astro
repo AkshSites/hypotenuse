@@ -1,0 +1,46 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { getAllProofs } from '../lib/proofs';
+
+interface Props {
+  title: string;
+  description: string;
+  headerEyebrow?: string;
+}
+const { title, description, headerEyebrow } = Astro.props;
+
+const proofs = await getAllProofs();
+const proofIds = JSON.stringify(proofs.map((p) => p.id));
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <script is:inline>
+      (function () {
+        try {
+          var stored = localStorage.getItem('hypotenuse-theme');
+          if (stored === 'light' || stored === 'dark') {
+            document.documentElement.setAttribute('data-theme', stored);
+          }
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <a href="#main" class="skip-link">Skip to content</a>
+    <Header eyebrow={headerEyebrow} />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+    <script type="application/json" id="proof-index" set:html={proofIds} is:inline />
+  </body>
+</html>

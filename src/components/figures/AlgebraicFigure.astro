@@ -1,0 +1,43 @@
+---
+import FigurePanel from './FigurePanel.astro';
+import { pt, polygon } from '../../lib/geometry';
+
+interface Props {
+  title: string;
+}
+const { title } = Astro.props;
+
+const a = 120;
+const b = 160;
+const s = a + b;
+
+const outer = [pt(0, 0), pt(s, 0), pt(s, s), pt(0, s)];
+const W = pt(a, 0);
+const X = pt(s, a);
+const Y = pt(b, s);
+const Z = pt(0, b);
+const tilted = [W, X, Y, Z];
+const tri1 = [pt(0, 0), W, Z];
+const tri2 = [W, pt(s, 0), X];
+const tri3 = [X, pt(s, s), Y];
+const tri4 = [Y, pt(0, s), Z];
+---
+
+<FigurePanel title={title} viewBox="-20 -20 320 320" width={460} height={460}>
+  <polygon points={polygon(outer)} fill="none" stroke="var(--ink)" stroke-width="1.6" data-figure-id="outer" data-kind="line" style="--base-opacity:0.9"></polygon>
+
+  <polygon points={polygon(tri1)} fill="var(--paper-2)" stroke="var(--ink)" stroke-width="1.2" data-figure-id="tri1" data-kind="fill" style="--base-opacity:0.7; --lit-opacity:1"></polygon>
+  <polygon points={polygon(tri2)} fill="var(--paper-2)" stroke="var(--ink)" stroke-width="1.2" data-figure-id="tri2" data-kind="fill" style="--base-opacity:0.7; --lit-opacity:1"></polygon>
+  <polygon points={polygon(tri3)} fill="var(--paper-2)" stroke="var(--ink)" stroke-width="1.2" data-figure-id="tri3" data-kind="fill" style="--base-opacity:0.7; --lit-opacity:1"></polygon>
+  <polygon points={polygon(tri4)} fill="var(--paper-2)" stroke="var(--ink)" stroke-width="1.2" data-figure-id="tri4" data-kind="fill" style="--base-opacity:0.7; --lit-opacity:1"></polygon>
+
+  <polygon points={polygon(tilted)} fill="var(--sq-c)" stroke="var(--ink)" stroke-width="1.6" data-figure-id="sqC" data-kind="fill" style="--base-opacity:0.72"></polygon>
+
+  <circle cx={W.x} cy={W.y} r="3" fill="var(--ink)"></circle>
+  <circle cx={X.x} cy={X.y} r="3" fill="var(--ink)"></circle>
+  <circle cx={Y.x} cy={Y.y} r="3" fill="var(--ink)"></circle>
+  <circle cx={Z.x} cy={Z.y} r="3" fill="var(--ink)"></circle>
+
+  <text x={W.x} y={W.y - 10} text-anchor="middle" font-family="Instrument Serif, serif" font-size="15" font-style="italic" fill="var(--ink-2)">a</text>
+  <text x={X.x + 14} y={X.y} text-anchor="middle" font-family="Instrument Serif, serif" font-size="15" font-style="italic" fill="var(--ink-2)">a</text>
+</FigurePanel>

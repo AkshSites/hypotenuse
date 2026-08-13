@@ -1,0 +1,50 @@
+---
+import Button from './Button.astro';
+import ShuffleGlyph from './ShuffleGlyph.astro';
+
+interface Props {
+  variant?: 'primary' | 'secondary';
+  label?: string;
+  excludeId?: string;
+  glyphSize?: number;
+  class?: string;
+}
+const { variant = 'primary', label = 'Show me a random proof', excludeId, glyphSize = 26, class: klass } = Astro.props;
+---
+
+<Button href="/random" variant={variant} class={['shuffle-btn', klass].filter(Boolean).join(' ')} data-shuffle-btn data-exclude={excludeId ?? ''}>
+  <ShuffleGlyph size={glyphSize} />
+  <span>{label}</span>
+</Button>
+
+<script>
+  function initShuffleButtons() {
+    const indexEl = document.getElementById('proof-index');
+    if (!indexEl?.textContent) return;
+    let ids: string[] = [];
+    try {
+      ids = JSON.parse(indexEl.textContent);
+    } catch {
+      return;
+    }
+    if (ids.length === 0) return;
+
+    document.querySelectorAll<HTMLAnchorElement>('[data-shuffle-btn]').forEach((btn) => {
+      if (btn.dataset.wired === 'true') return;
+      btn.dataset.wired = 'true';
+      btn.addEventListener('click', (event) => {
+        const exclude = btn.dataset.exclude || '';
+        const pool = ids.filter((id) => id !== exclude);
+        if (pool.length === 0) return;
+        event.preventDefault();
+        const target = pool[Math.floor(Math.random() * pool.length)];
+        btn.classList.add('is-spinning');
+        window.setTimeout(() => {
+          window.location.href = `/proofs/${target}`;
+        }, 380);
+      });
+    });
+  }
+  initShuffleButtons();
+  document.addEventListener('astro:page-load', initShuffleButtons);
+</script>

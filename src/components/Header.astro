@@ -1,0 +1,140 @@
+---
+import Logo from './Logo.astro';
+
+interface Props {
+  eyebrow?: string;
+}
+const { eyebrow } = Astro.props;
+
+const nav = [
+  { href: '/proofs', label: 'Index' },
+  { href: '/timeline', label: 'Timeline' },
+  { href: '/contribute', label: 'Contribute' },
+];
+---
+
+<header class="site-header">
+  <a href="/" class="wordmark">
+    <Logo />
+    <span class="wordmark-text">Hypotenuse</span>
+    {eyebrow && <span class="wordmark-eyebrow font-mono">{eyebrow}</span>}
+  </a>
+  <nav class="site-nav" aria-label="Primary">
+    {nav.map((item) => (
+      <a href={item.href}>{item.label}</a>
+    ))}
+    <button type="button" class="theme-toggle font-mono" data-theme-toggle aria-label="Toggle dark mode" aria-pressed="false">
+      <span data-theme-toggle-glyph aria-hidden="true">☾</span>
+      <span data-theme-toggle-label>DARK</span>
+    </button>
+  </nav>
+</header>
+
+<script is:inline>
+  (function () {
+    function currentTheme() {
+      const attr = document.documentElement.getAttribute('data-theme');
+      if (attr === 'light' || attr === 'dark') return attr;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    function applyTheme(theme, persist) {
+      document.documentElement.setAttribute('data-theme', theme);
+      document.querySelectorAll('[data-theme-toggle-glyph]').forEach(function (el) {
+        el.textContent = theme === 'dark' ? '☀' : '☾';
+      });
+      document.querySelectorAll('[data-theme-toggle-label]').forEach(function (el) {
+        el.textContent = theme === 'dark' ? 'LIGHT' : 'DARK';
+      });
+      document.querySelectorAll('[data-theme-toggle]').forEach(function (el) {
+        el.setAttribute('aria-pressed', String(theme === 'dark'));
+      });
+      if (persist) {
+        try {
+          localStorage.setItem('hypotenuse-theme', theme);
+        } catch (e) {}
+      }
+    }
+    applyTheme(currentTheme(), false);
+    document.addEventListener('click', function (event) {
+      const btn = event.target.closest('[data-theme-toggle]');
+      if (!btn) return;
+      applyTheme(currentTheme() === 'dark' ? 'light' : 'dark', true);
+    });
+  })();
+</script>
+
+<style>
+  .site-header {
+    height: 86px;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 56px;
+    border-bottom: 1px solid var(--hair);
+  }
+  .wordmark {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    color: var(--ink);
+  }
+  .wordmark-text {
+    font-family: var(--font-display);
+    font-size: 23px;
+    letter-spacing: 0.01em;
+  }
+  .wordmark-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    color: var(--ink-2);
+    margin-left: 10px;
+  }
+  .site-nav {
+    display: flex;
+    align-items: center;
+    gap: 34px;
+    font-size: 13.5px;
+    letter-spacing: 0.02em;
+    color: var(--ink-2);
+  }
+  .site-nav a:hover {
+    color: var(--sq-c);
+  }
+  .theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    border: 1px solid var(--line);
+    padding: 7px 12px;
+    color: var(--ink-2);
+    transition:
+      border-color 0.2s ease,
+      color 0.2s ease;
+  }
+  .theme-toggle:hover {
+    border-color: var(--ink);
+    color: var(--ink);
+  }
+
+  @media (max-width: 720px) {
+    .site-header {
+      padding: 0 20px;
+      height: auto;
+      min-height: 72px;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding-top: 14px;
+      padding-bottom: 14px;
+    }
+    .site-nav {
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+    .wordmark-eyebrow {
+      display: none;
+    }
+  }
+</style>

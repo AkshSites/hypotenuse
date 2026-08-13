@@ -1,0 +1,59 @@
+---
+interface Props extends astroHTML.JSX.HTMLAttributes {
+  href?: string;
+  variant?: 'primary' | 'secondary' | 'quiet';
+  class?: string;
+}
+const { href, variant = 'primary', class: klass, ...rest } = Astro.props;
+const Tag = href ? 'a' : 'button';
+const classes = ['btn', `btn-${variant}`, klass].filter(Boolean).join(' ');
+---
+
+<Tag href={href} class={classes} {...rest} {...Tag === 'button' ? { type: 'button' } : {}}>
+  <slot />
+</Tag>
+
+<style>
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--font-body);
+    font-size: 15px;
+    letter-spacing: 0.01em;
+    user-select: none;
+    cursor: pointer;
+    border-radius: 2px;
+    transition:
+      transform 0.18s cubic-bezier(0.34, 1.4, 0.5, 1),
+      background 0.2s ease,
+      color 0.2s ease;
+  }
+  .btn-primary {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 15px 22px;
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+  }
+  .btn-secondary {
+    border: 1px solid var(--ink);
+    color: var(--ink);
+    padding: 14px 21px;
+  }
+  .btn-secondary:hover {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .btn-quiet {
+    color: var(--ink-2);
+    padding: 14px 4px;
+    border-bottom: 1px solid var(--line);
+    border-radius: 0;
+  }
+  .btn-quiet:hover {
+    color: var(--ink);
+    border-color: var(--ink);
+  }
+</style>

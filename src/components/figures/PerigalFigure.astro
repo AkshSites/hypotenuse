@@ -1,0 +1,45 @@
+---
+import FigurePanel from './FigurePanel.astro';
+import SquaresFigure from './SquaresFigure.astro';
+import { rightTriangleLayout, pt, polygon, path } from '../../lib/geometry';
+
+interface Props {
+  title: string;
+}
+const { title } = Astro.props;
+
+const layout = rightTriangleLayout(120, 160);
+
+// squareRQ (the larger leg-square) runs R -> Q -> Q+n -> R+n, i.e. corners
+// (0,0) (160,0) (160,160) (0,160) in the triangle's local frame.
+const center = pt(80, 80);
+const cutA = [pt(0, 20), pt(160, 140)]; // line through center, parallel to hyp
+const cutB = [pt(20, 160), pt(140, 0)]; // line through center, perpendicular to hyp
+
+const piece1 = [pt(140, 0), pt(160, 0), pt(160, 140), center];
+const piece2 = [pt(160, 140), pt(160, 160), pt(20, 160), center];
+const piece3 = [pt(20, 160), pt(0, 160), pt(0, 20), center];
+const piece4 = [pt(0, 20), pt(0, 0), pt(140, 0), center];
+const pieces = [piece1, piece2, piece3, piece4];
+---
+
+<FigurePanel title={title} viewBox="-150 -310 470 500" width={500} height={520}>
+  <SquaresFigure layout={layout} ids={{ a: 'sqA', b: '', c: 'sqC' }} labels={{ R: 'A', P: 'B', Q: 'C' }} />
+
+  {pieces.map((piece, i) => (
+    <polygon
+      points={polygon(piece)}
+      fill={i % 2 === 0 ? 'var(--sq-b)' : 'var(--ink)'}
+      stroke="var(--ink)"
+      stroke-width="1.2"
+      data-figure-id={`piece${i + 1}`}
+      data-kind="fill"
+      style={`--base-opacity:${i % 2 === 0 ? 0.55 : 0.3}; --lit-opacity:0.95`}
+    ></polygon>
+  ))}
+
+  <path d={path(cutA)} stroke="var(--ink)" stroke-width="1.2" opacity="0.7"></path>
+  <path d={path(cutB)} stroke="var(--ink)" stroke-width="1.2" opacity="0.7"></path>
+
+  <circle cx={center.x} cy={center.y} r="3" fill="var(--ink)"></circle>
+</FigurePanel>

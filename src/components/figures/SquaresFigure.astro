@@ -1,0 +1,66 @@
+---
+import type { RightTriangleLayout } from '../../lib/geometry';
+import { polygon } from '../../lib/geometry';
+
+interface Props {
+  layout: RightTriangleLayout;
+  ids?: { a: string; b: string; c: string; triangle?: string };
+  labels?: { R?: string; P?: string; Q?: string };
+}
+const { layout, ids = { a: 'sqA', b: 'sqB', c: 'sqC' }, labels } = Astro.props;
+---
+
+<polygon
+  points={polygon(layout.squareRP)}
+  fill="var(--sq-a)"
+  data-figure-id={ids.a}
+  data-kind="fill"
+  style="--base-opacity:0.82"
+></polygon>
+<polygon
+  points={polygon(layout.squareRQ)}
+  fill="var(--sq-b)"
+  data-figure-id={ids.b}
+  data-kind="fill"
+  style="--base-opacity:0.82"
+></polygon>
+<polygon
+  points={polygon(layout.squarePQ)}
+  fill="var(--sq-c)"
+  data-figure-id={ids.c}
+  data-kind="fill"
+  style="--base-opacity:0.82"
+></polygon>
+
+<polygon
+  points={polygon([layout.R, layout.P, layout.Q])}
+  fill="var(--paper)"
+  stroke="var(--ink)"
+  stroke-width="1.6"
+  data-figure-id={ids.triangle}
+  data-kind={ids.triangle ? 'fill' : undefined}
+  style={ids.triangle ? '--base-opacity:1' : undefined}
+></polygon>
+
+<polygon points={polygon(layout.squareRP)} fill="none" stroke="var(--ink)" stroke-width="1.3" stroke-linejoin="round" opacity="0.85"
+></polygon>
+<polygon points={polygon(layout.squareRQ)} fill="none" stroke="var(--ink)" stroke-width="1.3" stroke-linejoin="round" opacity="0.85"
+></polygon>
+<polygon points={polygon(layout.squarePQ)} fill="none" stroke="var(--ink)" stroke-width="1.3" stroke-linejoin="round" opacity="0.85"
+></polygon>
+
+{labels?.R && (
+  <text x={layout.R.x - 14} y={layout.R.y + 18} text-anchor="middle" font-family="Instrument Serif, serif" font-size="19" fill="var(--ink)">
+    {labels.R}
+  </text>
+)}
+{labels?.P && (
+  <text x={layout.P.x - 14} y={layout.P.y - 8} text-anchor="middle" font-family="Instrument Serif, serif" font-size="19" fill="var(--ink)">
+    {labels.P}
+  </text>
+)}
+{labels?.Q && (
+  <text x={layout.Q.x + 14} y={layout.Q.y + 18} text-anchor="middle" font-family="Instrument Serif, serif" font-size="19" fill="var(--ink)">
+    {labels.Q}
+  </text>
+)}

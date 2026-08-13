@@ -1,0 +1,160 @@
+---
+import { render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ShuffleButton from '../../components/ShuffleButton.astro';
+import DifficultyPips from '../../components/DifficultyPips.astro';
+import StepList from '../../components/StepList.astro';
+import { FIGURES } from '../../components/figures';
+import { CATEGORY_LABELS, getAllProofs } from '../../lib/proofs';
+import { renderInlineMath } from '../../lib/markdown';
+
+export async function getStaticPaths() {
+  const proofs = await getAllProofs();
+  return proofs.map((proof, index) => ({
+    params: { id: proof.id },
+    props: { proof, number: index + 1 },
+  }));
+}
+
+const { proof, number } = Astro.props;
+const { title, attribution, category, yearDisplay, difficulty, proposition, steps, source, summary } = proof.data;
+const Figure = FIGURES[proof.data.diagram];
+const { Content } = await render(proof);
+const proofNumber = String(number).padStart(3, '0');
+---
+
+<BaseLayout title={`${title} — Hypotenuse`} description={summary} headerEyebrow={`/ PROOF ${proofNumber}`}>
+  <div class="proof-hero">
+    <div class="proof-hero-top">
+      <p class="eyebrow">{source ?? CATEGORY_LABELS[category]}</p>
+      <ShuffleButton variant="secondary" label="Show another proof" excludeId={proof.id} glyphSize={22} />
+    </div>
+    <h1>{title}</h1>
+    <div class="proof-meta">
+      <span class="proof-attribution">
+        {attribution} · <em>c.</em> <span class="font-mono">{yearDisplay}</span> · {CATEGORY_LABELS[category]}
+      </span>
+      <span class="meta-divider" aria-hidden="true"></span>
+      <DifficultyPips level={difficulty.level} label={difficulty.label} />
+    </div>
+  </div>
+
+  <section class="proof-body" data-proof-interactive>
+    <div class="proof-steps-col">
+      <p class="proposition" set:html={renderInlineMath(proposition)} />
+      <StepList steps={steps} />
+      <p class="qed">Therefore c² = a² + b². ∎</p>
+      <div class="proof-note">
+        <Content />
+      </div>
+    </div>
+
+    <Figure title={title} />
+  </section>
+</BaseLayout>
+
+<style>
+  .proof-hero {
+    padding: 64px 56px 20px 56px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    max-width: 1100px;
+  }
+  .proof-hero-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .proof-hero h1 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 64px;
+    line-height: 1.02;
+    letter-spacing: -0.015em;
+  }
+  .proof-meta {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+  .proof-attribution {
+    font-size: 15px;
+    color: var(--ink-2);
+  }
+  .meta-divider {
+    width: 1px;
+    height: 18px;
+    background: var(--line);
+  }
+
+  .proof-body {
+    display: grid;
+    grid-template-columns: 1fr 560px;
+    gap: 64px;
+    padding: 40px 56px 80px 56px;
+    align-items: start;
+  }
+  .proposition {
+    font-family: var(--font-display);
+    font-size: 25px;
+    line-height: 1.42;
+    margin: 0 0 22px 0;
+    max-width: 640px;
+    color: var(--ink);
+  }
+  .proposition :global(.katex) {
+    font-size: 1em;
+  }
+  .qed {
+    margin-top: 26px;
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-style: italic;
+    color: var(--ink-2);
+  }
+  .proof-note {
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid var(--hair);
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--ink-2);
+    max-width: 640px;
+  }
+  .proof-note :global(a) {
+    color: var(--sq-c);
+    border-bottom: 1px solid currentColor;
+  }
+
+  @media (max-width: 980px) {
+    .proof-hero {
+      padding: 40px 24px 16px 24px;
+    }
+    .proof-hero-top {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+    }
+    .proof-hero h1 {
+      font-size: 42px;
+    }
+    .proof-body {
+      grid-template-columns: 1fr;
+      padding: 24px 24px 56px 24px;
+      gap: 32px;
+    }
+  }
+
+  @media print {
+    .proof-hero-top :global(.shuffle-btn) {
+      display: none;
+    }
+    .proof-body {
+      grid-template-columns: 1fr 340px;
+    }
+  }
+</style>

@@ -1,0 +1,60 @@
+---
+import FigurePanel from './FigurePanel.astro';
+import SquaresFigure from './SquaresFigure.astro';
+import { rightTriangleLayout, footOfAltitude, add, scale, polygon, path } from '../../lib/geometry';
+
+interface Props {
+  title: string;
+}
+const { title } = Astro.props;
+
+const layout = rightTriangleLayout(120, 160);
+const { R: A, P: B, Q: C, hypOutward, hyp } = layout;
+const foot = footOfAltitude(A, B, C);
+const L = add(foot, scale(hypOutward, hyp));
+const D = layout.squarePQ[2];
+const E = layout.squarePQ[3];
+
+const rectBDLF = [B, D, L, foot];
+const rectFLEC = [foot, L, E, C];
+---
+
+<FigurePanel title={title} viewBox="-150 -310 470 500" width={500} height={520}>
+  <polygon points={polygon(rectBDLF)} fill="var(--sq-a)" data-figure-id="rectP" data-kind="fill" style="--base-opacity:0; --lit-opacity:0.85"></polygon>
+  <polygon points={polygon(rectFLEC)} fill="var(--sq-b)" data-figure-id="rectQ" data-kind="fill" style="--base-opacity:0; --lit-opacity:0.85"></polygon>
+
+  <SquaresFigure layout={layout} labels={{ R: 'A', P: 'B', Q: 'C' }} />
+
+  <path d={path([A, foot, L])} fill="none" stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="5 5" data-figure-id="altitude" data-kind="line" style="--base-opacity:0"></path>
+
+  <path
+    d={`M ${(B.x + layout.squareRP[2].x) / 2},${(B.y + layout.squareRP[2].y) / 2} L ${(foot.x + D.x) / 2},${(foot.y + D.y) / 2}`}
+    stroke="var(--sq-a)"
+    stroke-width="1.6"
+    marker-end="url(#arrow-a)"
+    data-figure-id="rectP"
+    data-kind="line"
+    style="--base-opacity:0"
+  ></path>
+  <path
+    d={`M ${(C.x + layout.squareRQ[2].x) / 2},${(C.y + layout.squareRQ[2].y) / 2} L ${(foot.x + E.x) / 2},${(foot.y + E.y) / 2}`}
+    stroke="var(--sq-b)"
+    stroke-width="1.6"
+    marker-end="url(#arrow-b)"
+    data-figure-id="rectQ"
+    data-kind="line"
+    style="--base-opacity:0"
+  ></path>
+
+  <defs>
+    <marker id="arrow-a" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="var(--sq-a)"></path>
+    </marker>
+    <marker id="arrow-b" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="var(--sq-b)"></path>
+    </marker>
+  </defs>
+
+  <circle cx={L.x} cy={L.y} r="3" fill="var(--ink)"></circle>
+  <text x={L.x + 14} y={L.y + 4} text-anchor="middle" font-family="Instrument Serif, serif" font-size="17" fill="var(--ink-2)">L</text>
+</FigurePanel>

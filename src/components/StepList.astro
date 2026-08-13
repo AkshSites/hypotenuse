@@ -1,0 +1,110 @@
+---
+import { renderInlineMath } from '../lib/markdown';
+
+interface Step {
+  text: string;
+  highlights: string[];
+}
+interface Props {
+  steps: Step[];
+}
+const { steps } = Astro.props;
+---
+
+<ol class="step-list" data-proof-steps>
+  {steps.map((step, i) => (
+    <li class="step" data-step data-highlights={step.highlights.join(',')} tabindex="0">
+      <span class="step-num font-mono" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+      <span class="step-text" set:html={renderInlineMath(step.text)} />
+    </li>
+  ))}
+</ol>
+
+<script>
+  function initProofInteractions(root: ParentNode) {
+    root.querySelectorAll<HTMLElement>('[data-proof-interactive]').forEach((section) => {
+      if (section.dataset.wired === 'true') return;
+      const figure = section.querySelector<HTMLElement>('[data-proof-figure]');
+      const steps = Array.from(section.querySelectorAll<HTMLElement>('[data-step]'));
+      if (!figure || steps.length === 0) return;
+      section.dataset.wired = 'true';
+
+      const setActive = (ids: string[] | null) => {
+        figure.dataset.active = ids ? 'true' : 'false';
+        figure.querySelectorAll<HTMLElement>('[data-figure-id]').forEach((el) => {
+          const id = el.dataset.figureId ?? '';
+          el.classList.toggle('is-lit', !!ids && ids.includes(id));
+        });
+      };
+
+      steps.forEach((step) => {
+        const ids = (step.dataset.highlights ?? '')
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean);
+        const activate = () => {
+          steps.forEach((s) => s.classList.toggle('is-active', s === step));
+          setActive(ids);
+        };
+        const deactivate = () => {
+          step.classList.remove('is-active');
+          setActive(null);
+        };
+        step.addEventListener('mouseenter', activate);
+        step.addEventListener('mouseleave', deactivate);
+        step.addEventListener('focus', activate);
+        step.addEventListener('blur', deactivate);
+      });
+    });
+  }
+  initProofInteractions(document);
+  document.addEventListener('astro:page-load', () => initProofInteractions(document));
+</script>
+
+<style>
+  .step-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .step {
+    display: grid;
+    grid-template-columns: 34px 1fr;
+    gap: 18px;
+    padding: 16px 18px 16px 16px;
+    border-top: 1px solid var(--hair);
+    border-left: 2px solid transparent;
+    cursor: default;
+    transition:
+      background 0.25s ease,
+      border-color 0.25s ease;
+  }
+  .step:last-child {
+    border-bottom: 1px solid var(--hair);
+  }
+  .step-num {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--ink-2);
+    padding-top: 4px;
+    transition: color 0.25s ease;
+  }
+  .step-text {
+    font-size: 16px;
+    line-height: 1.62;
+    color: var(--ink);
+    max-width: 560px;
+  }
+  .step.is-active {
+    background: var(--paper-2);
+    border-left-color: var(--sq-c);
+  }
+  .step.is-active .step-num {
+    color: var(--sq-c);
+  }
+  .step-text :global(.katex) {
+    font-size: 1.03em;
+  }
+</style>

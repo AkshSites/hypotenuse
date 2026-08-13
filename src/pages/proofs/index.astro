@@ -1,0 +1,215 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import DifficultyPips from '../../components/DifficultyPips.astro';
+import { getAllProofs, CATEGORY_LABELS } from '../../lib/proofs';
+import { CATEGORIES } from '../../content.config';
+
+const proofs = await getAllProofs();
+const byTitle = [...proofs].sort((a, b) => a.data.title.localeCompare(b.data.title));
+---
+
+<BaseLayout title="Index — Hypotenuse" description="Every proof in the archive, filterable by category and difficulty.">
+  <div class="index-hero">
+    <p class="eyebrow">The archive</p>
+    <h1>Every proof, in one list.</h1>
+  </div>
+
+  <div class="filters font-mono" role="group" aria-label="Filter proofs">
+    <div class="filter-group">
+      <span class="filter-label">Category</span>
+      <button type="button" class="filter-chip is-active" data-filter-category="all">All</button>
+      {CATEGORIES.map((cat) => (
+        <button type="button" class="filter-chip" data-filter-category={cat}>{CATEGORY_LABELS[cat]}</button>
+      ))}
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Difficulty</span>
+      <button type="button" class="filter-chip is-active" data-filter-difficulty="all">All</button>
+      <button type="button" class="filter-chip" data-filter-difficulty="1">One glance</button>
+      <button type="button" class="filter-chip" data-filter-difficulty="2">Classical</button>
+      <button type="button" class="filter-chip" data-filter-difficulty="3">Pen &amp; paper</button>
+    </div>
+  </div>
+
+  <ul class="proof-list" data-proof-list>
+    {byTitle.map((proof) => (
+      <li class="proof-row" data-category={proof.data.category} data-difficulty={proof.data.difficulty.level}>
+        <a href={`/proofs/${proof.id}`} class="proof-row-link">
+          <span class="proof-row-title">{proof.data.title}</span>
+          <span class="proof-row-meta">
+            <span class="proof-row-attribution">{proof.data.attribution}</span>
+            <span class="proof-row-year font-mono">{proof.data.yearDisplay}</span>
+            <span class="proof-row-category font-mono">{CATEGORY_LABELS[proof.data.category]}</span>
+            <DifficultyPips level={proof.data.difficulty.level} label={proof.data.difficulty.label} />
+          </span>
+        </a>
+      </li>
+    ))}
+  </ul>
+
+  <p class="empty-state font-mono" data-empty-state hidden>No proofs match those filters.</p>
+</BaseLayout>
+
+<script>
+  function initFilters() {
+    const list = document.querySelector<HTMLElement>('[data-proof-list]');
+    const empty = document.querySelector<HTMLElement>('[data-empty-state]');
+    if (!list) return;
+    const rows = Array.from(list.querySelectorAll<HTMLElement>('.proof-row'));
+    const categoryButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-filter-category]'));
+    const difficultyButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-filter-difficulty]'));
+
+    let category = 'all';
+    let difficulty = 'all';
+
+    function apply() {
+      let visible = 0;
+      rows.forEach((row) => {
+        const matchCategory = category === 'all' || row.dataset.category === category;
+        const matchDifficulty = difficulty === 'all' || row.dataset.difficulty === difficulty;
+        const show = matchCategory && matchDifficulty;
+        row.hidden = !show;
+        if (show) visible += 1;
+      });
+      if (empty) empty.hidden = visible !== 0;
+    }
+
+    categoryButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        category = btn.dataset.filterCategory ?? 'all';
+        categoryButtons.forEach((b) => b.classList.toggle('is-active', b === btn));
+        apply();
+      });
+    });
+    difficultyButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        difficulty = btn.dataset.filterDifficulty ?? 'all';
+        difficultyButtons.forEach((b) => b.classList.toggle('is-active', b === btn));
+        apply();
+      });
+    });
+  }
+  initFilters();
+  document.addEventListener('astro:page-load', initFilters);
+</script>
+
+<style>
+  .index-hero {
+    padding: 56px 56px 24px 56px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .index-hero h1 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 52px;
+    letter-spacing: -0.015em;
+  }
+
+  .filters {
+    padding: 0 56px 32px 56px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .filter-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .filter-label {
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    margin-right: 6px;
+  }
+  .filter-chip {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    padding: 7px 12px;
+    border: 1px solid var(--line);
+    color: var(--ink-2);
+    background: transparent;
+    transition:
+      border-color 0.2s ease,
+      color 0.2s ease,
+      background 0.2s ease;
+  }
+  .filter-chip:hover {
+    border-color: var(--ink);
+    color: var(--ink);
+  }
+  .filter-chip.is-active {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+
+  .proof-list {
+    list-style: none;
+    margin: 0;
+    padding: 0 56px 64px 56px;
+    display: flex;
+    flex-direction: column;
+  }
+  .proof-row {
+    border-top: 1px solid var(--hair);
+  }
+  .proof-row:last-child {
+    border-bottom: 1px solid var(--hair);
+  }
+  .proof-row-link {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 22px 4px;
+    flex-wrap: wrap;
+  }
+  .proof-row-link:hover .proof-row-title {
+    color: var(--sq-c);
+  }
+  .proof-row-title {
+    font-family: var(--font-display);
+    font-size: 26px;
+    color: var(--ink);
+    transition: color 0.2s ease;
+  }
+  .proof-row-meta {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    font-size: 12px;
+    color: var(--ink-2);
+  }
+  .proof-row-year,
+  .proof-row-category {
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .empty-state {
+    padding: 0 56px 64px 56px;
+    color: var(--ink-2);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 720px) {
+    .index-hero,
+    .filters,
+    .proof-list,
+    .empty-state {
+      padding-left: 20px;
+      padding-right: 20px;
+    }
+    .proof-row-link {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+    }
+  }
+</style>

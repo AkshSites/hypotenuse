@@ -1,0 +1,106 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Contribute — Hypotenuse" description="How to add a proof to the archive: one content entry and one diagram component.">
+  <div class="contribute">
+    <p class="eyebrow">Add to the archive</p>
+    <h1>One content entry. One diagram component.</h1>
+    <p class="lede">
+      Hypotenuse has no submission form and no database — it's a static site built from plain files. Adding a proof means opening a pull request with two things: a content entry describing the proof's steps, and a diagram component that knows how to light up when each step is hovered.
+    </p>
+
+    <ol class="contribute-steps">
+      <li>
+        <h2>1. Write the content entry</h2>
+        <p>
+          Add a Markdown file to <code>src/content/proofs/</code>. Its frontmatter carries the title, attribution, category, year, difficulty tier, the proposition statement, and an ordered list of <code>steps</code>. Each step is <code>{`{ text, highlights }`}</code> — <code>highlights</code> is a list of ids naming the parts of the diagram that step should light up. The schema is enforced by Zod in <code>src/content.config.ts</code>, so a malformed entry fails the build rather than shipping broken.
+        </p>
+      </li>
+      <li>
+        <h2>2. Build the diagram</h2>
+        <p>
+          Add an Astro component to <code>src/components/figures/</code> that renders an SVG figure inside <code>&lt;FigurePanel&gt;</code>. Every part a step might reference needs a matching <code>data-figure-id</code> attribute and a <code>data-kind</code> of <code>fill</code> or <code>line</code>, so the shared highlight script (in <code>StepList.astro</code>) can shade it or thicken its stroke on hover and keyboard focus. Many proofs reuse the three-squares-on-a-right-triangle motif — call <code>rightTriangleLayout()</code> from <code>src/lib/geometry.ts</code> and drop the result into <code>&lt;SquaresFigure&gt;</code> rather than recomputing the points by hand.
+        </p>
+      </li>
+      <li>
+        <h2>3. Register the diagram</h2>
+        <p>
+          Add the diagram's key to <code>DIAGRAM_KEYS</code> in <code>src/content.config.ts</code> and point to your new component in the <code>FIGURES</code> map in <code>src/components/figures/index.ts</code>. Set your content entry's <code>diagram</code> field to that key.
+        </p>
+      </li>
+    </ol>
+
+    <p class="lede">
+      Two ground rules: write the exposition in your own words — no lifting text or diagrams from other proof collections — and keep the math honest. If you're not sure a dissection actually closes, a quick script that checks the areas numerically is worth more than a confident guess.
+    </p>
+
+    <p class="repo-link font-mono">→ See README.md in the project root for the full walkthrough.</p>
+  </div>
+</BaseLayout>
+
+<style>
+  .contribute {
+    padding: 56px 56px 96px 56px;
+    max-width: 760px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+  .contribute h1 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 48px;
+    line-height: 1.05;
+    letter-spacing: -0.015em;
+  }
+  .lede {
+    font-size: 17px;
+    line-height: 1.68;
+    color: var(--ink-2);
+  }
+  .contribute-steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+  .contribute-steps li {
+    padding-top: 24px;
+    border-top: 1px solid var(--hair);
+  }
+  .contribute-steps h2 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+  .contribute-steps p {
+    font-size: 15.5px;
+    line-height: 1.68;
+    color: var(--ink-2);
+  }
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    background: var(--paper-2);
+    padding: 2px 6px;
+    color: var(--ink);
+  }
+  .repo-link {
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    color: var(--ink-2);
+  }
+
+  @media (max-width: 720px) {
+    .contribute {
+      padding: 40px 20px 64px 20px;
+    }
+    .contribute h1 {
+      font-size: 34px;
+    }
+  }
+</style>

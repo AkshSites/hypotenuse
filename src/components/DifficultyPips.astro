@@ -1,0 +1,41 @@
+---
+interface Props {
+  level: 1 | 2 | 3;
+  label: string;
+}
+const { level, label } = Astro.props;
+const colors = ['var(--sq-a)', 'var(--sq-b)', 'var(--sq-c)'];
+---
+
+<span class="difficulty">
+  <span class="difficulty-eyebrow font-mono">Difficulty</span>
+  <span class="pips" role="img" aria-label={`Difficulty: ${label}, ${level} of 3`}>
+    {[0, 1, 2].map((i) => <span class="pip" style={i < level ? `background:${colors[i]}` : ''}></span>)}
+  </span>
+  <span class="difficulty-name">{label}</span>
+</span>
+
+<style>
+  .difficulty {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+  }
+  .pips {
+    display: inline-flex;
+    gap: 4px;
+  }
+  .pip {
+    width: 11px;
+    height: 11px;
+    border: 1px solid var(--line);
+  }
+  .difficulty-name {
+    color: var(--ink);
+  }
+</style>

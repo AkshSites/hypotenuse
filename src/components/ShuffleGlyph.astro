@@ -1,0 +1,21 @@
+---
+interface Props {
+  size?: number;
+}
+const { size = 26 } = Astro.props;
+---
+
+<svg width={size} height={size} viewBox="-13 -13 26 26" class="shuffle-glyph" aria-hidden="true" focusable="false">
+  <rect x="-11" y="-11" width="8.5" height="8.5" fill="var(--sq-a)"></rect>
+  <rect x="2.5" y="-11" width="8.5" height="8.5" fill="var(--sq-b)"></rect>
+  <rect x="-4.25" y="2.5" width="8.5" height="8.5" fill="var(--sq-c)"></rect>
+</svg>
+
+<style>
+  .shuffle-glyph {
+    transition: transform 0.7s cubic-bezier(0.3, 1.25, 0.4, 1);
+  }
+  :global(.is-spinning) .shuffle-glyph {
+    transform: rotate(360deg);
+  }
+</style>

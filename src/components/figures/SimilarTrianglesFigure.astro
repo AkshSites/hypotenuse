@@ -1,0 +1,30 @@
+---
+import FigurePanel from './FigurePanel.astro';
+import SquaresFigure from './SquaresFigure.astro';
+import { rightTriangleLayout, footOfAltitude, polygon, path } from '../../lib/geometry';
+
+interface Props {
+  title: string;
+}
+const { title } = Astro.props;
+
+const layout = rightTriangleLayout(120, 160);
+const { R: A, P: B, Q: C } = layout;
+const D = footOfAltitude(A, B, C);
+const triABD = [A, B, D];
+const triACD = [A, C, D];
+const triWhole = [A, B, C];
+---
+
+<FigurePanel title={title} viewBox="-150 -160 470 350" width={500} height={370}>
+  <SquaresFigure layout={layout} ids={{ a: 'sqA', b: 'sqB', c: 'sqC', triangle: 'triWhole' }} labels={{ R: 'A', P: 'B', Q: 'C' }} />
+
+  <polygon points={polygon(triABD)} fill="var(--sq-a)" data-figure-id="triABD" data-kind="fill" style="--base-opacity:0; --lit-opacity:0.55"></polygon>
+  <polygon points={polygon(triACD)} fill="var(--sq-b)" data-figure-id="triACD" data-kind="fill" style="--base-opacity:0; --lit-opacity:0.55"></polygon>
+  <polygon points={polygon(triWhole)} fill="var(--sq-c)" data-figure-id="triWhole" data-kind="fill" style="--base-opacity:0; --lit-opacity:0.28"></polygon>
+
+  <path d={path([A, D])} stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="5 5" data-figure-id="altitude" data-kind="line" style="--base-opacity:0.65"></path>
+
+  <circle cx={D.x} cy={D.y} r="3" fill="var(--ink)"></circle>
+  <text x={D.x} y={D.y + 20} text-anchor="middle" font-family="Instrument Serif, serif" font-size="18" fill="var(--ink)">D</text>
+</FigurePanel>
