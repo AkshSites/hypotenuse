@@ -1,32 +1,70 @@
 ---
+import CoffeeButton from './CoffeeButton.astro';
 ---
 
 <footer class="site-footer no-print">
-  <span>Euclid · Bhāskara · Garfield · Perigal · Einstein</span>
-  <span>An open archive</span>
+  <div class="footer-row footer-row-main">
+    <span>Euclid · Bhāskara · Garfield · Perigal · Einstein</span>
+    <span>An open archive</span>
+  </div>
+  <div class="footer-row footer-row-sub">
+    <p class="credit">Made by <span class="credit-name">Aksh Dhakar</span></p>
+    <CoffeeButton />
+  </div>
 </footer>
 
 <style>
   .site-footer {
     display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 20px 56px;
+    border-top: 1px solid var(--hair);
+  }
+  .footer-row {
+    display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-    padding: 20px 56px;
-    border-top: 1px solid var(--hair);
+  }
+  .footer-row-main {
     font-family: var(--font-mono);
     font-size: 10.5px;
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--ink-2);
   }
+  .footer-row-sub {
+    padding-top: 14px;
+    border-top: 1px solid var(--hair);
+  }
+  .credit {
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+  }
+  .credit-name {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 17px;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--sq-c);
+  }
 
   @media (max-width: 720px) {
     .site-footer {
       padding: 16px 20px;
+    }
+    .footer-row {
       flex-direction: column;
       align-items: flex-start;
-      gap: 6px;
+      gap: 10px;
     }
   }
 </style>

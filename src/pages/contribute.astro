@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import CoffeeButton from '../components/CoffeeButton.astro';
 ---
 
 <BaseLayout title="Contribute — Hypotenuse" description="How to add a proof to the archive: one content entry and one diagram component.">
@@ -36,6 +37,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </p>
 
     <p class="repo-link font-mono">→ See README.md in the project root for the full walkthrough.</p>
+
+    <div class="support-row">
+      <p class="support-note">If the archive was useful to you</p>
+      <CoffeeButton placement="below" />
+    </div>
   </div>
 </BaseLayout>
 
@@ -92,6 +98,18 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .repo-link {
     font-size: 12px;
     letter-spacing: 0.1em;
+    color: var(--ink-2);
+  }
+  .support-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 4px;
+    padding-top: 24px;
+    border-top: 1px solid var(--hair);
+  }
+  .support-note {
+    font-size: 14.5px;
     color: var(--ink-2);
   }
 

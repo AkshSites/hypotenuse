@@ -1,0 +1,124 @@
+---
+import { COFFEE_URL } from '../lib/config';
+
+interface Props {
+  class?: string;
+  placement?: 'above' | 'below';
+}
+const { class: klass, placement = 'above' } = Astro.props;
+
+const MESSAGE = 'No coffee yet — but a² + b² still equals c². Some things you get for free.';
+---
+
+<span class={['coffee-button', `coffee-button-${placement}`, klass].filter(Boolean).join(' ')} data-coffee-root>
+  {COFFEE_URL ? (
+    <a href={COFFEE_URL} target="_blank" rel="noopener noreferrer" class="coffee-trigger font-mono">
+      ☕ Buy me a coffee
+    </a>
+  ) : (
+    <button type="button" class="coffee-trigger font-mono" data-coffee-trigger aria-expanded="false">
+      ☕ Buy me a coffee
+    </button>
+  )}
+  {!COFFEE_URL && (
+    <span class="coffee-popover" data-coffee-popover role="status" aria-live="polite" hidden>
+      {MESSAGE}
+    </span>
+  )}
+</span>
+
+<script>
+  function initCoffeeButtons(root: ParentNode) {
+    root.querySelectorAll<HTMLButtonElement>('[data-coffee-trigger]').forEach((btn) => {
+      if (btn.dataset.wired === 'true') return;
+      btn.dataset.wired = 'true';
+      btn.addEventListener('click', (event) => {
+        event.stopPropagation();
+        const wrap = btn.closest<HTMLElement>('[data-coffee-root]');
+        const popover = wrap?.querySelector<HTMLElement>('[data-coffee-popover]');
+        if (!popover) return;
+        const willOpen = popover.hidden;
+        closeAllCoffeePopovers();
+        if (willOpen) {
+          popover.hidden = false;
+          btn.setAttribute('aria-expanded', 'true');
+        }
+      });
+    });
+  }
+
+  function closeAllCoffeePopovers() {
+    document.querySelectorAll<HTMLElement>('[data-coffee-popover]').forEach((p) => {
+      p.hidden = true;
+    });
+    document.querySelectorAll<HTMLElement>('[data-coffee-trigger]').forEach((b) => {
+      b.setAttribute('aria-expanded', 'false');
+    });
+  }
+
+  initCoffeeButtons(document);
+  document.addEventListener('astro:page-load', () => initCoffeeButtons(document));
+  document.addEventListener('click', closeAllCoffeePopovers);
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeAllCoffeePopovers();
+  });
+</script>
+
+<style>
+  .coffee-button {
+    position: relative;
+    display: inline-flex;
+  }
+  .coffee-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    border: 1px solid var(--line);
+    padding: 7px 12px;
+    color: var(--ink-2);
+    background: none;
+    cursor: pointer;
+    transition:
+      border-color 0.2s ease,
+      color 0.2s ease;
+  }
+  .coffee-trigger:hover,
+  .coffee-trigger:focus-visible {
+    border-color: var(--sq-c);
+    color: var(--sq-c);
+  }
+
+  .coffee-popover {
+    position: absolute;
+    right: 0;
+    width: max-content;
+    max-width: 240px;
+    background: var(--paper-2);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    padding: 12px 14px;
+    font-family: var(--font-body);
+    font-size: 12.5px;
+    line-height: 1.5;
+    text-transform: none;
+    letter-spacing: normal;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+    z-index: 20;
+  }
+  .coffee-button-above .coffee-popover {
+    bottom: calc(100% + 10px);
+  }
+  .coffee-button-below .coffee-popover {
+    top: calc(100% + 10px);
+  }
+
+  @media (max-width: 480px) {
+    .coffee-popover {
+      right: auto;
+      left: 0;
+    }
+  }
+</style>
