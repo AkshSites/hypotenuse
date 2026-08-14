@@ -13,6 +13,7 @@ export const DIAGRAM_KEYS = [
   'perigal',
   'algebraic',
   'einstein',
+  'davinci',
 ] as const;
 
 export const CATEGORIES = [

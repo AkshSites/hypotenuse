@@ -76,6 +76,21 @@ export function footOfAltitude(p: Point, a: Point, b: Point): Point {
   return add(a, scale(ab, t));
 }
 
+/**
+ * The apex of a right triangle erected on segment h1→h2 (its hypotenuse),
+ * with the given leg lengths from each endpoint (legFromH1² + legFromH2²
+ * must equal |h1h2|²). `outward` picks which side of the segment the apex
+ * falls on. Used for windmill-style constructions (Bhaskara, Da Vinci).
+ */
+export function apexOnSegment(h1: Point, h2: Point, legFromH1: number, legFromH2: number, outward = true): Point {
+  const c = len(sub(h2, h1));
+  const u = scale(sub(h2, h1), 1 / c);
+  const n = outward ? { x: -u.y, y: u.x } : { x: u.y, y: -u.x };
+  const along = (legFromH1 * legFromH1) / c;
+  const perpDist = (legFromH1 * legFromH2) / c;
+  return add(add(h1, scale(u, along)), scale(n, perpDist));
+}
+
 function round(n: number): number {
   return Math.round(n * 100) / 100;
 }
