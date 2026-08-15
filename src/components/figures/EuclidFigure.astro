@@ -34,7 +34,7 @@ const triGCB = [G, C, B];
   <polygon points={polygon(triACE)} fill="var(--ink)" data-figure-id="triACE" data-kind="fill" style="--base-opacity:0; --lit-opacity:0.8"></polygon>
   <polygon points={polygon(triGCB)} fill="var(--ink)" data-figure-id="triGCB" data-kind="fill" style="--base-opacity:0; --lit-opacity:0.8"></polygon>
 
-  <SquaresFigure layout={layout} labels={{ R: 'A', P: 'B', Q: 'C' }} />
+  <SquaresFigure layout={layout} />
 
   <path d={path([A, foot, L])} fill="none" stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="5 5" data-figure-id="altitude" data-kind="line" style="--base-opacity:0"></path>
   <path d={path([B, D])} stroke="var(--ink)" stroke-width="1.1" data-figure-id="triABD" data-kind="line" style="--base-opacity:0"></path>
@@ -43,12 +43,12 @@ const triGCB = [G, C, B];
   <path d={path([G, B])} stroke="var(--ink)" stroke-width="1.1" data-figure-id="triGCB" data-kind="line" style="--base-opacity:0"></path>
 
   <circle cx={A.x} cy={A.y} r="3" fill="var(--ink)"></circle>
-  <text x={A.x - 6} y={A.y - 12} text-anchor="middle" font-family="Instrument Serif, serif" font-size="19" fill="var(--ink)">A</text>
-  <text x={B.x - 14} y={B.y + 4} text-anchor="middle" font-family="Instrument Serif, serif" font-size="19" fill="var(--ink)">B</text>
-  <text x={C.x + 14} y={C.y + 4} text-anchor="middle" font-family="Instrument Serif, serif" font-size="19" fill="var(--ink)">C</text>
-  <text x={D.x - 4} y={D.y - 10} text-anchor="middle" font-family="Instrument Serif, serif" font-size="17" fill="var(--ink-2)">D</text>
-  <text x={E.x + 12} y={E.y - 2} text-anchor="middle" font-family="Instrument Serif, serif" font-size="17" fill="var(--ink-2)">E</text>
-  <text x={F.x - 12} y={F.y + 2} text-anchor="middle" font-family="Instrument Serif, serif" font-size="17" fill="var(--ink-2)">F</text>
-  <text x={G.x + 4} y={G.y + 16} text-anchor="middle" font-family="Instrument Serif, serif" font-size="17" fill="var(--ink-2)">G</text>
-  <text x={L.x + 14} y={L.y + 4} text-anchor="middle" font-family="Instrument Serif, serif" font-size="17" fill="var(--ink-2)">L</text>
+  <text x={A.x - 18} y={A.y + 22} text-anchor="middle" font-family="Instrument Serif, serif" font-size="19" fill="var(--ink)">A</text>
+  <text x={B.x - 4} y={B.y - 16} text-anchor="middle" font-family="Instrument Serif, serif" font-size="19" fill="var(--ink)">B</text>
+  <text x={C.x + 18} y={C.y - 10} text-anchor="middle" font-family="Instrument Serif, serif" font-size="19" fill="var(--ink)">C</text>
+  <text x={D.x - 2} y={D.y - 16} text-anchor="middle" font-family="Instrument Serif, serif" font-size="17" fill="var(--ink-2)">D</text>
+  <text x={E.x + 16} y={E.y - 4} text-anchor="middle" font-family="Instrument Serif, serif" font-size="17" fill="var(--ink-2)">E</text>
+  <text x={F.x - 14} y={F.y - 8} text-anchor="middle" font-family="Instrument Serif, serif" font-size="17" fill="var(--ink-2)">F</text>
+  <text x={G.x + 6} y={G.y + 20} text-anchor="middle" font-family="Instrument Serif, serif" font-size="17" fill="var(--ink-2)">G</text>
+  <text x={L.x + 4} y={L.y - 14} text-anchor="middle" font-family="Instrument Serif, serif" font-size="17" fill="var(--ink-2)">L</text>
 </FigurePanel>
