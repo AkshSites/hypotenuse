@@ -32,7 +32,7 @@ const proofNumber = String(number).padStart(3, '0');
     <h1>{title}</h1>
     <div class="proof-meta">
       <span class="proof-attribution">
-        {attribution} · <em>c.</em> <span class="font-mono">{yearDisplay}</span> · {CATEGORY_LABELS[category]}
+        {attribution} · <span class="font-mono">{yearDisplay}</span> · {CATEGORY_LABELS[category]}
       </span>
       <span class="meta-divider" aria-hidden="true"></span>
       <DifficultyPips level={difficulty.level} label={difficulty.label} />

@@ -1,9 +1,9 @@
 ---
 title: The Sliding Squares
-attribution: "Traditional — area-preserving shear"
+attribution: "Traditional"
 category: dissection
-yearValue: -200
-yearDisplay: antiquity
+yearValue: -150
+yearDisplay: Antiquity
 difficulty:
   level: 3
   label: Pen & paper

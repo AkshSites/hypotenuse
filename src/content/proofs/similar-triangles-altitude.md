@@ -1,9 +1,9 @@
 ---
 title: The Altitude's Shadow
-attribution: Traditional — similar triangles
+attribution: Traditional
 category: similar-triangles
 yearValue: -250
-yearDisplay: antiquity
+yearDisplay: Antiquity
 difficulty:
   level: 2
   label: Classical

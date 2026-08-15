@@ -1,9 +1,9 @@
 ---
 title: The Tilted Square
-attribution: "Traditional — algebraic"
+attribution: "Traditional"
 category: algebraic
 yearValue: -200
-yearDisplay: antiquity
+yearDisplay: Antiquity
 difficulty:
   level: 1
   label: One glance
