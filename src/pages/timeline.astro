@@ -3,31 +3,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { getAllProofs, CATEGORY_LABELS } from '../lib/proofs';
 
 const proofs = await getAllProofs();
-const minYear = Math.min(...proofs.map((p) => p.data.yearValue));
-
-// Position in real pixels, not a percentage of a fixed-width track — a
-// percentage track has to compress every gap to fit, which silently
-// undoes whatever minimum spacing it just enforced once a few proofs
-// cluster together. Pixels stay honest instead: lay out one raw pixel
-// per year, then walk left to right pushing card centers apart until
-// each ~160px-wide card has real breathing room, however tightly two
-// proofs happen to be dated. The track's width simply grows to fit, and
-// scrolls horizontally if it doesn't fit the viewport.
-const PIXELS_PER_YEAR = 1;
-const MIN_GAP_PX = 190;
-const EDGE_PAD_PX = 90;
-
-const points = proofs.map((proof) => ({
-  proof,
-  position: (proof.data.yearValue - minYear) * PIXELS_PER_YEAR,
-}));
-for (let i = 1; i < points.length; i++) {
-  if (points[i].position - points[i - 1].position < MIN_GAP_PX) {
-    points[i].position = points[i - 1].position + MIN_GAP_PX;
-  }
-}
-points.forEach((p) => (p.position += EDGE_PAD_PX));
-const trackWidth = points.length > 0 ? points[points.length - 1].position + EDGE_PAD_PX : 0;
 ---
 
 <BaseLayout title="Timeline — Hypotenuse" description="Every proof in the archive, placed on a timeline from Euclid to the present.">
@@ -36,20 +11,18 @@ const trackWidth = points.length > 0 ? points[points.length - 1].position + EDGE
     <h1>Three thousand years of the same idea.</h1>
   </div>
 
-  <div class="timeline-scroll">
-    <div class="timeline" role="list" style={`width:${trackWidth}px`}>
-      <div class="timeline-axis" aria-hidden="true"></div>
-      {points.map(({ proof, position }) => (
-        <a href={`/proofs/${proof.id}`} class="timeline-point" style={`--position:${position}px`} role="listitem">
-          <span class="timeline-marker" aria-hidden="true"></span>
-          <span class="timeline-card">
-            <span class="timeline-year font-mono">{proof.data.yearDisplay}</span>
-            <span class="timeline-title">{proof.data.title}</span>
-            <span class="timeline-attribution">{proof.data.attribution} · {CATEGORY_LABELS[proof.data.category]}</span>
-          </span>
-        </a>
-      ))}
-    </div>
+  <div class="timeline-list">
+    <div class="timeline-axis" aria-hidden="true"></div>
+    {proofs.map((proof) => (
+      <a href={`/proofs/${proof.id}`} class="timeline-row">
+        <span class="timeline-date font-mono">{proof.data.yearDisplay}</span>
+        <span class="timeline-dot-col"><span class="timeline-dot" aria-hidden="true"></span></span>
+        <span class="timeline-content">
+          <span class="timeline-title">{proof.data.title}</span>
+          <span class="timeline-attribution">{proof.data.attribution} · {CATEGORY_LABELS[proof.data.category]}</span>
+        </span>
+      </a>
+    ))}
   </div>
 </BaseLayout>
 
@@ -67,106 +40,107 @@ const trackWidth = points.length > 0 ? points[points.length - 1].position + EDGE
     letter-spacing: -0.015em;
   }
 
-  .timeline-scroll {
-    overflow-x: auto;
-    padding: 70px 56px 56px 56px;
-  }
-  .timeline {
+  .timeline-list {
     position: relative;
-    height: 120px;
+    margin: 0 56px 64px 56px;
   }
   .timeline-axis {
     position: absolute;
-    left: 0;
-    right: 0;
-    top: 100%;
-    height: 1px;
+    top: 0;
+    bottom: 0;
+    left: 124px;
+    width: 1px;
     background: var(--line);
   }
-  .timeline-point {
-    position: absolute;
-    left: var(--position);
-    top: 100%;
-    display: flex;
-    flex-direction: column;
+  .timeline-row {
+    position: relative;
+    display: grid;
+    grid-template-columns: 108px 32px 1fr;
     align-items: center;
-    width: 160px;
-    margin-left: -80px;
-    text-align: center;
-    gap: 10px;
-    transform: translateY(calc(-100% - 14px));
+    gap: 0;
+    padding: 22px 0;
+    border-top: 1px solid var(--hair);
   }
-  .timeline-marker {
-    width: 8px;
-    height: 8px;
+  .timeline-row:last-child {
+    border-bottom: 1px solid var(--hair);
+  }
+  .timeline-date {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-align: right;
+    padding-right: 14px;
+    white-space: nowrap;
+    color: var(--ink-2);
+  }
+  .timeline-dot-col {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .timeline-dot {
+    width: 9px;
+    height: 9px;
     border-radius: 50%;
     background: var(--ink-2);
     transition:
       background 0.2s ease,
       transform 0.2s ease;
   }
-  .timeline-point:hover .timeline-marker,
-  .timeline-point:focus-visible .timeline-marker {
+  .timeline-row:hover .timeline-dot,
+  .timeline-row:focus-visible .timeline-dot {
     background: var(--sq-c);
-    transform: scale(1.4);
+    transform: scale(1.35);
   }
-  .timeline-card {
+  .timeline-content {
     display: flex;
     flex-direction: column;
     gap: 4px;
-  }
-  .timeline-year {
-    font-size: 10px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-2);
+    padding-left: 20px;
+    min-width: 0;
   }
   .timeline-title {
     font-family: var(--font-display);
-    font-size: 19px;
+    font-size: 22px;
     color: var(--ink);
     transition: color 0.2s ease;
   }
-  .timeline-point:hover .timeline-title,
-  .timeline-point:focus-visible .timeline-title {
+  .timeline-row:hover .timeline-title,
+  .timeline-row:focus-visible .timeline-title {
     color: var(--sq-c);
   }
   .timeline-attribution {
-    font-size: 11px;
+    font-size: 12.5px;
     color: var(--ink-2);
   }
 
-  @media (max-width: 900px) {
+  @media (max-width: 640px) {
     .timeline-hero {
-      padding: 40px 24px 24px 24px;
+      padding: 40px 20px 24px 20px;
     }
-    .timeline-scroll {
-      overflow-x: visible;
-      padding: 24px 24px 48px 24px;
+    .timeline-hero h1 {
+      font-size: 38px;
     }
-    .timeline {
-      width: auto !important;
-      height: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 28px;
+    .timeline-list {
+      margin: 0 20px 40px 20px;
     }
     .timeline-axis {
-      display: none;
+      left: 72px;
     }
-    .timeline-point {
-      position: static;
-      width: auto;
-      margin-left: 0;
-      transform: none !important;
-      flex-direction: row !important;
-      justify-content: flex-start;
-      text-align: left;
-      padding-bottom: 20px;
-      border-bottom: 1px solid var(--hair);
+    .timeline-row {
+      grid-template-columns: 60px 24px 1fr;
+      padding: 18px 0;
     }
-    .timeline-card {
-      text-align: left;
+    .timeline-date {
+      padding-right: 10px;
+      font-size: 9.5px;
+      white-space: normal;
+    }
+    .timeline-content {
+      padding-left: 12px;
+    }
+    .timeline-title {
+      font-size: 18px;
     }
   }
 </style>
