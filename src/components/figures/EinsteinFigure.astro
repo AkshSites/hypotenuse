@@ -16,10 +16,12 @@ const triWhole = [A, B, C];
 ---
 
 <FigurePanel title={title} viewBox="-40 -160 280 300" width={420} height={330}>
-  <polygon points={polygon(triWhole)} fill="var(--sq-c)" stroke="var(--ink)" stroke-width="1.6" data-figure-id="triWhole" data-kind="fill" style="--base-opacity:0.14; --lit-opacity:0.4"></polygon>
-
   <polygon points={polygon(triABD)} fill="var(--sq-a)" stroke="var(--ink)" stroke-width="1.2" data-figure-id="triABD" data-kind="fill" style="--base-opacity:0.55; --lit-opacity:0.9"></polygon>
   <polygon points={polygon(triACD)} fill="var(--sq-b)" stroke="var(--ink)" stroke-width="1.2" data-figure-id="triACD" data-kind="fill" style="--base-opacity:0.55; --lit-opacity:0.9"></polygon>
+
+  <!-- Drawn on top, outline-only, so it's never occluded by the two fills
+       above (a filled version sitting underneath them would be invisible). -->
+  <polygon points={polygon(triWhole)} fill="none" stroke="var(--sq-c)" stroke-width="1.8" data-figure-id="triWhole" data-kind="line" style="--base-opacity:0; --stroke-base:1.8; --stroke-lit:5"></polygon>
 
   <path d={path([A, D])} stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="5 5" data-figure-id="altitude" data-kind="line" style="--base-opacity:0.65"></path>
 

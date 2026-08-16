@@ -17,7 +17,7 @@ steps:
   - text: "Drop a perpendicular from $A$ to $BC$, and carry it straight on until it meets the far side of the square on $BC$, at $L$. That single stroke splits the big square into two rectangles."
     highlights: [altitude, rectP, rectQ]
   - text: "Draw $BF$, a side of the square on $AB$, and draw $AD$, reaching into the square on $BC$. Since $AB = BF$ and $BD = BC$ are each sides of a square, and angle $ABD$ and angle $FBC$ are each a right angle plus angle $ABC$, triangles $ABD$ and $FBC$ share two sides and the angle between them."
-    highlights: [triABD, triFBC]
+    highlights: [constructBF, constructAD]
   - text: "So triangle $ABD$ is congruent to triangle $FBC$ — matching sides enclosing a matching angle force the whole triangles to match."
     highlights: [triABD, triFBC]
   - text: "Triangle $ABD$ is exactly half of rectangle $BDLF$: same base $BD$, apex on a line parallel to it. Triangle $FBC$ is exactly half of square $ABFG$, for the same reason. Equal triangles, doubled, give an equal rectangle and square."
