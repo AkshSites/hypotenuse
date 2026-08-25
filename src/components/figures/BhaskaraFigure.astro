@@ -14,7 +14,7 @@ const center = pt(c / 2, c / 2);
 const H = [pt(0, 0), pt(c, 0), pt(c, c), pt(0, c)];
 const V0 = pt((a * a) / c, (a * b) / c);
 const quarterTurn = Math.PI / 2;
-const V = [V0, rotate(V0, -quarterTurn, center), rotate(V0, -2 * quarterTurn, center), rotate(V0, -3 * quarterTurn, center)];
+const V = [V0, rotate(V0, quarterTurn, center), rotate(V0, 2 * quarterTurn, center), rotate(V0, 3 * quarterTurn, center)];
 
 const triangles = [
   [H[0], H[1], V[0]],
