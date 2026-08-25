@@ -1,0 +1,58 @@
+---
+import FigurePanel from './FigurePanel.astro';
+import { pt, path, polygon, footOfAltitude } from '../../lib/geometry';
+
+interface Props {
+  title: string;
+}
+const { title } = Astro.props;
+
+// Right angle at R, fixed leg b = RP, growing leg a = RQ. Q0 is the "before"
+// position (a = 90), Q1 the "after" position (a = 120) — an exaggerated da
+// so the sliver triangle reads clearly on screen.
+const R = pt(0, 0);
+const P = pt(0, -160);
+const Q0 = pt(90, 0);
+const Q1 = pt(120, 0);
+
+// F: foot of the perpendicular from Q0 onto the new hypotenuse PQ1. Triangle
+// Q0–F–Q1 is the infinitesimal sliver — similar to R–P–Q1 by AA (both carry
+// a right angle, and share the angle at Q1), which is what makes FQ1/Q0Q1
+// equal a/c exactly, at any da, not just in the limit.
+const F = footOfAltitude(Q0, P, Q1);
+
+const markSize = 13;
+const rMark = [pt(R.x + markSize, R.y), pt(R.x + markSize, R.y - markSize), pt(R.x, R.y - markSize)];
+---
+
+<FigurePanel title={title} viewBox="-30 -190 210 230" width={420} height={460}>
+  <path d={path(rMark)} fill="none" stroke="var(--ink)" stroke-width="1.4" opacity="0.5"></path>
+
+  <path d={path([R, P, Q0], true)} fill="none" stroke="var(--ink-2)" stroke-width="1.4" stroke-dasharray="5 4" data-figure-id="triBefore" data-kind="line" style="--base-opacity:0.4; --stroke-lit:2.6"></path>
+
+  <polygon points={polygon([R, P, Q1])} fill="var(--paper)" stroke="var(--ink)" stroke-width="1.6" data-figure-id="triAfter" data-kind="fill" style="--base-opacity:1"></polygon>
+
+  <path d={path([R, Q1])} stroke="var(--sq-a)" stroke-width="2.2" data-figure-id="legA" data-kind="line" style="--base-opacity:0; --stroke-base:2.2; --stroke-lit:3.6"></path>
+  <path d={path([R, P])} stroke="var(--sq-b)" stroke-width="2.2" data-figure-id="legB" data-kind="line" style="--base-opacity:0; --stroke-base:2.2; --stroke-lit:3.6"></path>
+  <path d={path([P, Q1])} stroke="var(--sq-c)" stroke-width="2.2" data-figure-id="hypC" data-kind="line" style="--base-opacity:0; --stroke-base:2.2; --stroke-lit:3.6"></path>
+
+  <path d={path([Q0, Q1])} stroke="var(--ink)" stroke-width="1.6" data-figure-id="daSeg" data-kind="line" style="--base-opacity:0.55; --stroke-lit:2.8"></path>
+
+  <polygon points={polygon([Q0, F, Q1])} fill="var(--sq-c)" stroke="var(--ink)" stroke-width="1" data-figure-id="sliverTri" data-kind="fill" style="--base-opacity:0.3; --lit-opacity:0.85"></polygon>
+
+  <circle cx={R.x} cy={R.y} r="3" fill="var(--ink)"></circle>
+  <circle cx={P.x} cy={P.y} r="3" fill="var(--ink)"></circle>
+  <circle cx={Q1.x} cy={Q1.y} r="3" fill="var(--ink)"></circle>
+  <circle cx={Q0.x} cy={Q0.y} r="2.4" fill="var(--ink-2)"></circle>
+
+  <text x={R.x - 12} y={R.y + 18} text-anchor="middle" font-family="Instrument Serif, serif" font-size="17" fill="var(--ink)">R</text>
+  <text x={P.x - 12} y={P.y - 6} text-anchor="middle" font-family="Instrument Serif, serif" font-size="17" fill="var(--ink)">P</text>
+  <text x={Q1.x + 12} y={Q1.y + 18} text-anchor="middle" font-family="Instrument Serif, serif" font-size="17" fill="var(--ink)">Q</text>
+  <text x={Q0.x} y={Q0.y + 18} text-anchor="middle" font-family="Instrument Serif, serif" font-size="13" fill="var(--ink-2)">Q₀</text>
+
+  <text x={(R.x + Q1.x) / 2} y={R.y + 20} text-anchor="middle" font-family="Instrument Serif, serif" font-size="16" font-style="italic" fill="var(--sq-a)">a</text>
+  <text x={R.x - 16} y={(R.y + P.y) / 2} text-anchor="middle" font-family="Instrument Serif, serif" font-size="16" font-style="italic" fill="var(--sq-b)">b</text>
+  <text x={(P.x + Q1.x) / 2 + 16} y={(P.y + Q1.y) / 2 - 4} text-anchor="middle" font-family="Instrument Serif, serif" font-size="16" font-style="italic" fill="var(--sq-c)">c</text>
+  <text x={(Q0.x + Q1.x) / 2} y={Q0.y - 8} text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" fill="var(--ink)">da</text>
+  <text x={F.x + 6} y={(F.y + Q1.y) / 2} text-anchor="start" font-family="JetBrains Mono, monospace" font-size="12" fill="var(--ink)">dc</text>
+</FigurePanel>

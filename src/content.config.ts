@@ -17,6 +17,8 @@ export const DIAGRAM_KEYS = [
   'incircle',
   'tip-to-tail',
   'ptolemy',
+  'differential',
+  'complex',
 ] as const;
 
 export const CATEGORIES = [

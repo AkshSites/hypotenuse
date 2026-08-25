@@ -11,6 +11,8 @@ import DaVinci from './DaVinciFigure.astro';
 import Incircle from './IncircleFigure.astro';
 import TipToTail from './TipToTailFigure.astro';
 import Ptolemy from './PtolemyFigure.astro';
+import Differential from './DifferentialFigure.astro';
+import Complex from './ComplexFigure.astro';
 
 export const FIGURES: Record<string, AstroComponentFactory> = {
   euclid: Euclid,
@@ -25,4 +27,6 @@ export const FIGURES: Record<string, AstroComponentFactory> = {
   incircle: Incircle,
   'tip-to-tail': TipToTail,
   ptolemy: Ptolemy,
+  differential: Differential,
+  complex: Complex,
 };
