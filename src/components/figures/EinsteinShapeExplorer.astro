@@ -30,35 +30,6 @@ function iconPoints(template: typeof SQUARE_TEMPLATE) {
 ---
 
 <div class="shape-explorer" data-shape-explorer>
-  <h2 class="explorer-title">Pick a shape</h2>
-  <p class="explorer-lede">
-    Squares aren't special. Erect any family of similar shapes on the three sides and the same relation holds — try the
-    presets, or draw your own.
-  </p>
-
-  <div class="shape-picker" role="group" aria-label="Shape to erect on each side">
-    {SHAPE_PRESETS.map((preset, i) => (
-      <button type="button" class="shape-btn" data-preset={preset.id} aria-pressed={i === 0 ? 'true' : 'false'}>
-        <svg class="shape-icon" viewBox="-2 -10 24 30" aria-hidden="true">
-          <polygon points={iconPoints(preset.template)} fill="var(--ink-2)"></polygon>
-        </svg>
-        <span>{preset.label}</span>
-      </button>
-    ))}
-    <button type="button" class="shape-btn" data-draw-toggle aria-pressed="false">
-      <svg class="shape-icon" viewBox="-2 -10 24 30" aria-hidden="true">
-        <path
-          d="M4 16.5 14 6.5c1-1 2.6-1 3.5 0 1 1 1 2.5 0 3.5L7.5 20 3 21z"
-          fill="none"
-          stroke="var(--ink-2)"
-          stroke-width="1.6"
-          stroke-linejoin="round"
-        ></path>
-      </svg>
-      <span>Draw your own</span>
-    </button>
-  </div>
-
   <div class="explorer-figure">
     <svg viewBox="-190 -270 420 480" style="overflow:visible" role="img" aria-label="A right triangle with a chosen shape erected on each of its three sides">
       {initialShapes.map((s) => (
@@ -74,17 +45,63 @@ function iconPoints(template: typeof SQUARE_TEMPLATE) {
     </svg>
   </div>
 
-  <div class="draw-panel" data-draw-panel hidden>
-    <p class="draw-instructions">Draw a shape along the base line — mouse or touch both work.</p>
-    <svg class="draw-pad" data-draw-pad viewBox="0 0 240 200" role="img" aria-label="Freehand drawing area, with a base line near the bottom">
-      <line x1="12" y1="188" x2="228" y2="188" stroke="var(--ink-2)" stroke-width="1.5" stroke-dasharray="4 4"></line>
-      <polyline data-draw-preview points="" fill="none" stroke="var(--ink)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></polyline>
-    </svg>
-    <div class="draw-controls">
-      <Button variant="quiet" class="font-mono" data-draw-clear>Clear</Button>
-      <p class="draw-message" data-draw-message hidden>Try drawing something a bit bigger.</p>
+  <button type="button" class="shape-trigger font-mono" data-shape-trigger>
+    Change shape <span class="trigger-current" data-trigger-current>(Square)</span>
+  </button>
+
+  <dialog class="shape-modal" data-shape-modal aria-labelledby="shape-modal-title">
+    <div class="modal-inner">
+      <div class="modal-header">
+        <div>
+          <h2 id="shape-modal-title" class="explorer-title">Pick a shape</h2>
+          <p class="explorer-lede">
+            Squares aren't special. Erect any family of similar shapes on the three sides and the same relation holds
+            — try the presets, or draw your own.
+          </p>
+        </div>
+        <button type="button" class="modal-close" data-modal-close aria-label="Close">&times;</button>
+      </div>
+
+      <div class="shape-picker" role="group" aria-label="Shape to erect on each side">
+        {SHAPE_PRESETS.map((preset, i) => (
+          <button type="button" class="shape-btn" data-preset={preset.id} data-preset-label={preset.label} aria-pressed={i === 0 ? 'true' : 'false'}>
+            <svg class="shape-icon" viewBox="-2 -10 24 30" aria-hidden="true">
+              <polygon points={iconPoints(preset.template)} fill="var(--ink-2)"></polygon>
+            </svg>
+            <span>{preset.label}</span>
+          </button>
+        ))}
+        <button type="button" class="shape-btn" data-draw-toggle aria-pressed="false">
+          <svg class="shape-icon" viewBox="-2 -10 24 30" aria-hidden="true">
+            <path
+              d="M4 16.5 14 6.5c1-1 2.6-1 3.5 0 1 1 1 2.5 0 3.5L7.5 20 3 21z"
+              fill="none"
+              stroke="var(--ink-2)"
+              stroke-width="1.6"
+              stroke-linejoin="round"
+            ></path>
+          </svg>
+          <span>Draw your own</span>
+        </button>
+      </div>
+
+      <div class="draw-panel" data-draw-panel hidden>
+        <p class="draw-instructions">Draw a shape along the base line — mouse or touch both work.</p>
+        <svg class="draw-pad" data-draw-pad viewBox="0 0 240 200" role="img" aria-label="Freehand drawing area, with a base line near the bottom">
+          <line x1="12" y1="188" x2="228" y2="188" stroke="var(--ink-2)" stroke-width="1.5" stroke-dasharray="4 4"></line>
+          <polyline data-draw-preview points="" fill="none" stroke="var(--ink)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></polyline>
+        </svg>
+        <div class="draw-controls">
+          <Button variant="quiet" class="font-mono" data-draw-clear>Clear</Button>
+          <p class="draw-message" data-draw-message hidden>Try drawing something a bit bigger.</p>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <Button variant="secondary" class="font-mono" data-modal-done>Done</Button>
+      </div>
     </div>
-  </div>
+  </dialog>
 </div>
 
 <script>
@@ -119,6 +136,30 @@ function iconPoints(template: typeof SQUARE_TEMPLATE) {
         });
       }
 
+      const dialog = section.querySelector<HTMLDialogElement>('[data-shape-modal]');
+      const trigger = section.querySelector<HTMLButtonElement>('[data-shape-trigger]');
+      const triggerCurrent = section.querySelector<HTMLElement>('[data-trigger-current]');
+      const closeBtn = section.querySelector<HTMLButtonElement>('[data-modal-close]');
+      const doneBtn = section.querySelector<HTMLButtonElement>('[data-modal-done]');
+
+      const setCurrentLabel = (label: string) => {
+        if (triggerCurrent) triggerCurrent.textContent = `(${label})`;
+      };
+
+      if (dialog && trigger) {
+        trigger.addEventListener('click', () => {
+          if (typeof dialog.showModal === 'function') dialog.showModal();
+        });
+        closeBtn?.addEventListener('click', () => dialog.close());
+        doneBtn?.addEventListener('click', () => dialog.close());
+        // Clicking the dimmed backdrop lands directly on the <dialog> element
+        // itself (not a descendant) — that's how we tell it apart from a
+        // click on the modal's own content.
+        dialog.addEventListener('click', (e) => {
+          if (e.target === dialog) dialog.close();
+        });
+      }
+
       const presetButtons = Array.from(section.querySelectorAll<HTMLButtonElement>('[data-preset]'));
       const drawButton = section.querySelector<HTMLButtonElement>('[data-draw-toggle]');
       const drawPanel = section.querySelector<HTMLElement>('[data-draw-panel]');
@@ -134,7 +175,9 @@ function iconPoints(template: typeof SQUARE_TEMPLATE) {
           if (!preset) return;
           renderTemplate(preset.template);
           setActiveButton(btn);
+          setCurrentLabel(preset.label);
           if (drawPanel) drawPanel.hidden = true;
+          dialog?.close();
         });
       });
 
@@ -216,6 +259,7 @@ function iconPoints(template: typeof SQUARE_TEMPLATE) {
           const scaled = maxTY > cap ? template.map((p) => pt(p.x, (p.y / maxTY) * cap)) : template;
           renderTemplate(scaled);
           if (drawButton) setActiveButton(drawButton);
+          setCurrentLabel('your drawing');
         };
 
         pad.addEventListener('pointerdown', (e) => {
@@ -269,21 +313,127 @@ function iconPoints(template: typeof SQUARE_TEMPLATE) {
   .shape-explorer {
     background: var(--paper-2);
     border-radius: 2px;
-    padding: 28px 24px 24px 24px;
+    padding: 24px 24px 22px 24px;
     display: flex;
     flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .explorer-figure {
+    display: flex;
+    justify-content: center;
+    padding: 8px 0;
+    width: 100%;
+  }
+  .explorer-figure svg {
+    width: 100%;
+    max-width: 340px;
+  }
+  .side-shape {
+    transition: opacity 0.22s ease;
+  }
+  .side-shape.is-swapping {
+    opacity: 0;
+  }
+
+  .shape-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    padding: 10px 18px;
+    border: 1px solid var(--ink);
+    border-radius: 2px;
+    color: var(--ink);
+    background: var(--paper);
+    transition:
+      background 0.2s ease,
+      color 0.2s ease;
+  }
+  .shape-trigger:hover {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .trigger-current {
+    color: var(--ink-2);
+  }
+  .shape-trigger:hover .trigger-current {
+    color: inherit;
+  }
+
+  /* --- Modal --- */
+  .shape-modal {
+    padding: 0;
+    border: none;
+    border-radius: 2px;
+    background: var(--paper);
+    color: var(--ink);
+    width: min(92vw, 480px);
+    max-width: 480px;
+    max-height: 85vh;
+    box-shadow: 0 24px 64px oklch(0 0 0 / 0.35);
+  }
+  .shape-modal::backdrop {
+    background: oklch(0.1 0 0 / 0.55);
+  }
+  .shape-modal[open] {
+    display: flex;
+    animation: modal-in 0.18s ease;
+  }
+  @keyframes modal-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .modal-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding: 26px 24px 24px 24px;
+    overflow-y: auto;
+    min-height: 0;
+  }
+  .modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
     gap: 16px;
   }
   .explorer-title {
     font-family: var(--font-display);
     font-size: 24px;
     color: var(--ink);
+    margin: 0 0 8px 0;
   }
   .explorer-lede {
     font-size: 14px;
     line-height: 1.6;
     color: var(--ink-2);
-    max-width: 46ch;
+    max-width: 42ch;
+  }
+  .modal-close {
+    flex: 0 0 auto;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    line-height: 1;
+    color: var(--ink-2);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+  }
+  .modal-close:hover {
+    color: var(--ink);
+    border-color: var(--ink-2);
   }
 
   .shape-picker {
@@ -327,28 +477,15 @@ function iconPoints(template: typeof SQUARE_TEMPLATE) {
     fill: var(--sq-c);
   }
 
-  .explorer-figure {
-    display: flex;
-    justify-content: center;
-    padding: 12px 0;
-  }
-  .explorer-figure svg {
-    width: 100%;
-    max-width: 380px;
-  }
-  .side-shape {
-    transition: opacity 0.22s ease;
-  }
-  .side-shape.is-swapping {
-    opacity: 0;
-  }
-
   .draw-panel {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    padding-top: 12px;
+    padding-top: 14px;
     border-top: 1px solid var(--hair);
+  }
+  .draw-panel[hidden] {
+    display: none;
   }
   .draw-instructions {
     font-size: 13px;
@@ -357,7 +494,7 @@ function iconPoints(template: typeof SQUARE_TEMPLATE) {
   .draw-pad {
     width: 100%;
     max-width: 320px;
-    background: var(--paper);
+    background: var(--paper-2);
     border: 1px solid var(--line);
     border-radius: 2px;
     cursor: crosshair;
@@ -373,5 +510,21 @@ function iconPoints(template: typeof SQUARE_TEMPLATE) {
     font-size: 13px;
     font-style: italic;
     color: var(--ink-2);
+  }
+
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 6px;
+    border-top: 1px solid var(--hair);
+  }
+
+  @media (max-width: 480px) {
+    .shape-modal {
+      width: 94vw;
+    }
+    .modal-inner {
+      padding: 22px 18px 18px 18px;
+    }
   }
 </style>
