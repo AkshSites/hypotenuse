@@ -1,0 +1,45 @@
+---
+import FigurePanel from './FigurePanel.astro';
+import { pt, path } from '../../lib/geometry';
+
+interface Props {
+  title: string;
+}
+const { title } = Astro.props;
+
+const halfWidth = 60; // half of leg a = 120
+const halfHeight = 80; // half of leg b = 160
+const radius = 100; // half of hyp c = 200
+
+const A = pt(-halfWidth, -halfHeight);
+const B = pt(halfWidth, -halfHeight);
+const C = pt(halfWidth, halfHeight);
+const D = pt(-halfWidth, halfHeight);
+---
+
+<FigurePanel title={title} viewBox="-130 -130 260 260" width={420} height={420}>
+  <circle cx="0" cy="0" r={radius} fill="none" stroke="var(--ink)" stroke-width="1.4" data-figure-id="circle" data-kind="line" style="--base-opacity:0.6"></circle>
+
+  <path d={path([A, B, C, D], true)} fill="var(--paper)" stroke="var(--ink)" stroke-width="1.6" data-figure-id="rectOutline" data-kind="line" style="--base-opacity:1"></path>
+
+  <path d={path([A, B])} stroke="var(--sq-a)" stroke-width="2" data-figure-id="sidesA" data-kind="line" style="--base-opacity:0; --stroke-base:2; --stroke-lit:3.4"></path>
+  <path d={path([C, D])} stroke="var(--sq-a)" stroke-width="2" data-figure-id="sidesA" data-kind="line" style="--base-opacity:0; --stroke-base:2; --stroke-lit:3.4"></path>
+  <path d={path([B, C])} stroke="var(--sq-b)" stroke-width="2" data-figure-id="sidesB" data-kind="line" style="--base-opacity:0; --stroke-base:2; --stroke-lit:3.4"></path>
+  <path d={path([D, A])} stroke="var(--sq-b)" stroke-width="2" data-figure-id="sidesB" data-kind="line" style="--base-opacity:0; --stroke-base:2; --stroke-lit:3.4"></path>
+
+  <path d={path([A, C])} stroke="var(--sq-c)" stroke-width="1.8" stroke-dasharray="5 4" data-figure-id="diagAC" data-kind="line" style="--base-opacity:0; --stroke-base:1.8; --stroke-lit:3"></path>
+  <path d={path([B, D])} stroke="var(--sq-c)" stroke-width="1.8" stroke-dasharray="5 4" data-figure-id="diagBD" data-kind="line" style="--base-opacity:0; --stroke-base:1.8; --stroke-lit:3"></path>
+
+  <circle cx={A.x} cy={A.y} r="2.6" fill="var(--ink)"></circle>
+  <circle cx={B.x} cy={B.y} r="2.6" fill="var(--ink)"></circle>
+  <circle cx={C.x} cy={C.y} r="2.6" fill="var(--ink)"></circle>
+  <circle cx={D.x} cy={D.y} r="2.6" fill="var(--ink)"></circle>
+
+  <text x={A.x - 12} y={A.y - 8} text-anchor="middle" font-family="Instrument Serif, serif" font-size="17" fill="var(--ink)">A</text>
+  <text x={B.x + 12} y={B.y - 8} text-anchor="middle" font-family="Instrument Serif, serif" font-size="17" fill="var(--ink)">B</text>
+  <text x={C.x + 12} y={C.y + 16} text-anchor="middle" font-family="Instrument Serif, serif" font-size="17" fill="var(--ink)">C</text>
+  <text x={D.x - 12} y={D.y + 16} text-anchor="middle" font-family="Instrument Serif, serif" font-size="17" fill="var(--ink)">D</text>
+
+  <text x="0" y={A.y - 12} text-anchor="middle" font-family="Instrument Serif, serif" font-size="15" font-style="italic" fill="var(--sq-a)">a</text>
+  <text x={B.x + 16} y="0" text-anchor="middle" font-family="Instrument Serif, serif" font-size="15" font-style="italic" fill="var(--sq-b)">b</text>
+</FigurePanel>

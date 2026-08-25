@@ -15,6 +15,8 @@ export const DIAGRAM_KEYS = [
   'einstein',
   'davinci',
   'incircle',
+  'tip-to-tail',
+  'ptolemy',
 ] as const;
 
 export const CATEGORIES = [
