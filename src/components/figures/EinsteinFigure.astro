@@ -1,5 +1,6 @@
 ---
 import FigurePanel from './FigurePanel.astro';
+import EinsteinShapeExplorer from './EinsteinShapeExplorer.astro';
 import { rightTriangleLayout, footOfAltitude, polygon, path } from '../../lib/geometry';
 
 interface Props {
@@ -15,6 +16,7 @@ const triACD = [A, C, D];
 const triWhole = [A, B, C];
 ---
 
+<div class="einstein-stack">
 <FigurePanel title={title} viewBox="-40 -160 280 300" width={420} height={330}>
   <polygon points={polygon(triABD)} fill="var(--sq-a)" stroke="var(--ink)" stroke-width="1.2" data-figure-id="triABD" data-kind="fill" style="--base-opacity:0.55; --lit-opacity:0.9"></polygon>
   <polygon points={polygon(triACD)} fill="var(--sq-b)" stroke="var(--ink)" stroke-width="1.2" data-figure-id="triACD" data-kind="fill" style="--base-opacity:0.55; --lit-opacity:0.9"></polygon>
@@ -34,3 +36,14 @@ const triWhole = [A, B, C];
   <text x={C.x + 14} y={C.y + 4} text-anchor="middle" font-family="Instrument Serif, serif" font-size="18" fill="var(--ink)">C</text>
   <text x={D.x} y={D.y + 20} text-anchor="middle" font-family="Instrument Serif, serif" font-size="17" fill="var(--ink)">D</text>
 </FigurePanel>
+
+<EinsteinShapeExplorer />
+</div>
+
+<style>
+  .einstein-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+</style>

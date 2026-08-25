@@ -1,0 +1,377 @@
+---
+import Button from '../Button.astro';
+import { rightTriangleLayout, shapeOnSegment, polygon, pt } from '../../lib/geometry';
+import { SHAPE_PRESETS, SQUARE_TEMPLATE } from '../../lib/shapeTemplates';
+
+const layout = rightTriangleLayout(120, 160);
+const { R: A, P: B, Q: C } = layout;
+
+// AB is the shorter leg ("a"), AC the longer leg ("b"), BC the hypotenuse
+// ("c") — flip chosen per side so each shape lands outward, away from the
+// triangle's third vertex (same convention as squareOn).
+const sides = [
+  { key: 'ab', p1: A, p2: B, flip: false, color: 'var(--sq-a)' },
+  { key: 'ac', p1: A, p2: C, flip: true, color: 'var(--sq-b)' },
+  { key: 'bc', p1: B, p2: C, flip: false, color: 'var(--sq-c)' },
+] as const;
+
+const initialShapes = sides.map((s) => ({
+  ...s,
+  points: polygon(shapeOnSegment(s.p1, s.p2, SQUARE_TEMPLATE, s.flip)),
+}));
+
+// Small preview icons, built with the same helper that draws the real
+// shapes — an icon is just a shape erected on a 16-unit practice segment.
+const iconBase1 = pt(2, 18);
+const iconBase2 = pt(18, 18);
+function iconPoints(template: typeof SQUARE_TEMPLATE) {
+  return polygon(shapeOnSegment(iconBase1, iconBase2, template, true));
+}
+---
+
+<div class="shape-explorer" data-shape-explorer>
+  <h2 class="explorer-title">Pick a shape</h2>
+  <p class="explorer-lede">
+    Squares aren't special. Erect any family of similar shapes on the three sides and the same relation holds — try the
+    presets, or draw your own.
+  </p>
+
+  <div class="shape-picker" role="group" aria-label="Shape to erect on each side">
+    {SHAPE_PRESETS.map((preset, i) => (
+      <button type="button" class="shape-btn" data-preset={preset.id} aria-pressed={i === 0 ? 'true' : 'false'}>
+        <svg class="shape-icon" viewBox="-2 -10 24 30" aria-hidden="true">
+          <polygon points={iconPoints(preset.template)} fill="var(--ink-2)"></polygon>
+        </svg>
+        <span>{preset.label}</span>
+      </button>
+    ))}
+    <button type="button" class="shape-btn" data-draw-toggle aria-pressed="false">
+      <svg class="shape-icon" viewBox="-2 -10 24 30" aria-hidden="true">
+        <path
+          d="M4 16.5 14 6.5c1-1 2.6-1 3.5 0 1 1 1 2.5 0 3.5L7.5 20 3 21z"
+          fill="none"
+          stroke="var(--ink-2)"
+          stroke-width="1.6"
+          stroke-linejoin="round"
+        ></path>
+      </svg>
+      <span>Draw your own</span>
+    </button>
+  </div>
+
+  <div class="explorer-figure">
+    <svg viewBox="-190 -270 420 480" style="overflow:visible" role="img" aria-label="A right triangle with a chosen shape erected on each of its three sides">
+      {initialShapes.map((s) => (
+        <polygon points={s.points} fill={s.color} fill-opacity="0.55" stroke={s.color} stroke-width="1.6" data-side={s.key} class="side-shape"></polygon>
+      ))}
+      <polygon points={polygon([A, B, C])} fill="var(--paper)" stroke="var(--ink)" stroke-width="1.8"></polygon>
+      <circle cx={A.x} cy={A.y} r="3" fill="var(--ink)"></circle>
+      <circle cx={B.x} cy={B.y} r="3" fill="var(--ink)"></circle>
+      <circle cx={C.x} cy={C.y} r="3" fill="var(--ink)"></circle>
+      <text x={A.x - 6} y={A.y - 12} text-anchor="middle" font-family="Instrument Serif, serif" font-size="18" fill="var(--ink)">A</text>
+      <text x={B.x - 14} y={B.y + 4} text-anchor="middle" font-family="Instrument Serif, serif" font-size="18" fill="var(--ink)">B</text>
+      <text x={C.x + 14} y={C.y + 4} text-anchor="middle" font-family="Instrument Serif, serif" font-size="18" fill="var(--ink)">C</text>
+    </svg>
+  </div>
+
+  <div class="draw-panel" data-draw-panel hidden>
+    <p class="draw-instructions">Draw a shape along the base line — mouse or touch both work.</p>
+    <svg class="draw-pad" data-draw-pad viewBox="0 0 240 200" role="img" aria-label="Freehand drawing area, with a base line near the bottom">
+      <line x1="12" y1="188" x2="228" y2="188" stroke="var(--ink-2)" stroke-width="1.5" stroke-dasharray="4 4"></line>
+      <polyline data-draw-preview points="" fill="none" stroke="var(--ink)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></polyline>
+    </svg>
+    <div class="draw-controls">
+      <Button variant="quiet" class="font-mono" data-draw-clear>Clear</Button>
+      <p class="draw-message" data-draw-message hidden>Try drawing something a bit bigger.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { rightTriangleLayout, shapeOnSegment, pt, type Point, type ShapeTemplate } from '../../lib/geometry';
+  import { SHAPE_PRESETS } from '../../lib/shapeTemplates';
+
+  function pointsAttr(points: Point[]): string {
+    return points.map((p) => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(' ');
+  }
+
+  function initExplorer(root: ParentNode) {
+    root.querySelectorAll<HTMLElement>('[data-shape-explorer]').forEach((section) => {
+      if (section.dataset.wired === 'true') return;
+      section.dataset.wired = 'true';
+
+      const layout = rightTriangleLayout(120, 160);
+      const { R: A, P: B, Q: C } = layout;
+      const sideEls: { el: SVGPolygonElement; p1: Point; p2: Point; flip: boolean }[] = [
+        { el: section.querySelector<SVGPolygonElement>('[data-side="ab"]')!, p1: A, p2: B, flip: false },
+        { el: section.querySelector<SVGPolygonElement>('[data-side="ac"]')!, p1: A, p2: C, flip: true },
+        { el: section.querySelector<SVGPolygonElement>('[data-side="bc"]')!, p1: B, p2: C, flip: false },
+      ].filter((s) => s.el);
+
+      function renderTemplate(template: ShapeTemplate) {
+        sideEls.forEach((s) => {
+          s.el.classList.add('is-swapping');
+          const next = pointsAttr(shapeOnSegment(s.p1, s.p2, template, s.flip));
+          requestAnimationFrame(() => {
+            s.el.setAttribute('points', next);
+            requestAnimationFrame(() => s.el.classList.remove('is-swapping'));
+          });
+        });
+      }
+
+      const presetButtons = Array.from(section.querySelectorAll<HTMLButtonElement>('[data-preset]'));
+      const drawButton = section.querySelector<HTMLButtonElement>('[data-draw-toggle]');
+      const drawPanel = section.querySelector<HTMLElement>('[data-draw-panel]');
+      const allButtons = drawButton ? [...presetButtons, drawButton] : presetButtons;
+
+      function setActiveButton(active: HTMLButtonElement | null) {
+        allButtons.forEach((b) => b.setAttribute('aria-pressed', String(b === active)));
+      }
+
+      presetButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const preset = SHAPE_PRESETS.find((p) => p.id === btn.dataset.preset);
+          if (!preset) return;
+          renderTemplate(preset.template);
+          setActiveButton(btn);
+          if (drawPanel) drawPanel.hidden = true;
+        });
+      });
+
+      if (drawButton && drawPanel) {
+        drawButton.addEventListener('click', () => {
+          // Just reveals the pad — the button only becomes "active" once a
+          // shape is actually finalized, so it doesn't visually claim the
+          // triangle already shows a drawing before one exists.
+          drawPanel.hidden = !drawPanel.hidden;
+        });
+      }
+
+      const pad = section.querySelector<SVGSVGElement>('[data-draw-pad]');
+      const preview = section.querySelector<SVGPolylineElement>('[data-draw-preview]');
+      const message = section.querySelector<HTMLElement>('[data-draw-message]');
+      const clearBtn = section.querySelector<HTMLButtonElement>('[data-draw-clear]');
+
+      if (pad && preview) {
+        pad.style.touchAction = 'none';
+        const padWidth = 240;
+        const padHeight = 200;
+        const baseline = 188;
+        let points: Point[] = [];
+        let drawing = false;
+
+        const svgPoint = (evt: PointerEvent): Point => {
+          const rect = pad.getBoundingClientRect();
+          return pt(
+            ((evt.clientX - rect.left) / rect.width) * padWidth,
+            ((evt.clientY - rect.top) / rect.height) * padHeight
+          );
+        };
+
+        const updatePreview = () => preview.setAttribute('points', points.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' '));
+
+        const showMessage = () => {
+          if (!message) return;
+          message.hidden = false;
+        };
+        const hideMessage = () => {
+          if (message) message.hidden = true;
+        };
+
+        const reset = () => {
+          points = [];
+          updatePreview();
+        };
+
+        const finalizeDrawing = () => {
+          if (points.length < 3) {
+            showMessage();
+            reset();
+            return;
+          }
+          // Light smoothing: three-point moving average.
+          const smoothed = points.map((p, i) => {
+            if (i === 0 || i === points.length - 1) return p;
+            const prev = points[i - 1];
+            const next = points[i + 1];
+            return pt((prev.x + p.x + next.x) / 3, (prev.y + p.y + next.y) / 3);
+          });
+          const xs = smoothed.map((p) => p.x);
+          const ys = smoothed.map((p) => p.y);
+          const minX = Math.min(...xs);
+          const maxX = Math.max(...xs);
+          const minY = Math.min(...ys);
+          const maxY = Math.max(...ys);
+          const width = maxX - minX;
+          const height = maxY - minY;
+          if (width < 14 || height < 14) {
+            showMessage();
+            reset();
+            return;
+          }
+          const template: ShapeTemplate = smoothed.map((p) => pt((p.x - minX) / width, (baseline - p.y) / width));
+          // Guard against a wildly tall/thin doodle throwing the scale off.
+          const maxTY = Math.max(...template.map((p) => Math.abs(p.y)), 0.001);
+          const cap = 2.2;
+          const scaled = maxTY > cap ? template.map((p) => pt(p.x, (p.y / maxTY) * cap)) : template;
+          renderTemplate(scaled);
+          if (drawButton) setActiveButton(drawButton);
+        };
+
+        pad.addEventListener('pointerdown', (e) => {
+          drawing = true;
+          try {
+            pad.setPointerCapture(e.pointerId);
+          } catch {
+            // capture is best-effort; drawing still works without it
+          }
+          hideMessage();
+          points = [svgPoint(e)];
+          updatePreview();
+        });
+        pad.addEventListener('pointermove', (e) => {
+          if (!drawing) return;
+          const p = svgPoint(e);
+          const last = points[points.length - 1];
+          if (!last || Math.hypot(p.x - last.x, p.y - last.y) > 3) {
+            points.push(p);
+            updatePreview();
+          }
+        });
+        const finish = (e: PointerEvent) => {
+          if (!drawing) return;
+          drawing = false;
+          try {
+            pad.releasePointerCapture(e.pointerId);
+          } catch {
+            // pointer capture may already be released; safe to ignore
+          }
+          finalizeDrawing();
+        };
+        pad.addEventListener('pointerup', finish);
+        pad.addEventListener('pointerleave', (e) => {
+          if (drawing) finish(e);
+        });
+
+        clearBtn?.addEventListener('click', () => {
+          reset();
+          hideMessage();
+        });
+      }
+    });
+  }
+
+  initExplorer(document);
+  document.addEventListener('astro:page-load', () => initExplorer(document));
+</script>
+
+<style>
+  .shape-explorer {
+    background: var(--paper-2);
+    border-radius: 2px;
+    padding: 28px 24px 24px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .explorer-title {
+    font-family: var(--font-display);
+    font-size: 24px;
+    color: var(--ink);
+  }
+  .explorer-lede {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--ink-2);
+    max-width: 46ch;
+  }
+
+  .shape-picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .shape-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    background: var(--paper);
+    color: var(--ink-2);
+    font-size: 12px;
+    font-family: var(--font-mono);
+    transition:
+      border-color 0.2s ease,
+      color 0.2s ease,
+      background 0.2s ease;
+  }
+  .shape-btn .shape-icon {
+    width: 26px;
+    height: 26px;
+  }
+  .shape-btn:hover {
+    border-color: var(--ink-2);
+    color: var(--ink);
+  }
+  .shape-btn[aria-pressed='true'] {
+    border-color: var(--sq-c);
+    color: var(--ink);
+    background: var(--paper);
+  }
+  .shape-btn[aria-pressed='true'] .shape-icon polygon,
+  .shape-btn[aria-pressed='true'] .shape-icon path {
+    stroke: var(--sq-c);
+    fill: var(--sq-c);
+  }
+
+  .explorer-figure {
+    display: flex;
+    justify-content: center;
+    padding: 12px 0;
+  }
+  .explorer-figure svg {
+    width: 100%;
+    max-width: 380px;
+  }
+  .side-shape {
+    transition: opacity 0.22s ease;
+  }
+  .side-shape.is-swapping {
+    opacity: 0;
+  }
+
+  .draw-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--hair);
+  }
+  .draw-instructions {
+    font-size: 13px;
+    color: var(--ink-2);
+  }
+  .draw-pad {
+    width: 100%;
+    max-width: 320px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    cursor: crosshair;
+    touch-action: none;
+  }
+  .draw-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .draw-message {
+    font-size: 13px;
+    font-style: italic;
+    color: var(--ink-2);
+  }
+</style>

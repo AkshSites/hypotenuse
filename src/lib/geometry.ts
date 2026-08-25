@@ -91,6 +91,36 @@ export function apexOnSegment(h1: Point, h2: Point, legFromH1: number, legFromH2
   return add(add(h1, scale(u, along)), scale(n, perpDist));
 }
 
+/**
+ * A shape's outline, defined once relative to a canonical unit base
+ * segment running from (0,0) to (1,0), with the shape extending outward
+ * in +y. Used by shapeOnSegment to erect any shape — preset or
+ * user-drawn — on an arbitrary triangle side without rewriting the
+ * placement math per shape.
+ */
+export type ShapeTemplate = Point[];
+
+/**
+ * Places a shape template onto segment p1->p2: scaled uniformly by the
+ * segment's length (so it's a true similar copy, never stretched),
+ * rotated to the segment's angle, and positioned so its base aligns with
+ * the segment. `flip` mirrors it to the other side, matching squareOn's
+ * outward convention — pick whichever value puts the shape away from the
+ * triangle's third vertex.
+ */
+export function shapeOnSegment(p1: Point, p2: Point, template: ShapeTemplate, flip = false): Point[] {
+  const edge = sub(p2, p1);
+  const length = len(edge) || 1;
+  const cos = edge.x / length;
+  const sin = edge.y / length;
+  const sign = flip ? -1 : 1;
+  return template.map(({ x: tx, y: ty }) => {
+    const sx = tx * length;
+    const sy = ty * length * sign;
+    return pt(p1.x + sx * cos - sy * sin, p1.y + sx * sin + sy * cos);
+  });
+}
+
 function round(n: number): number {
   return Math.round(n * 100) / 100;
 }
