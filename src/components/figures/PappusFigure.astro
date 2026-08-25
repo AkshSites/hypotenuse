@@ -1,0 +1,56 @@
+---
+import FigurePanel from './FigurePanel.astro';
+import { pt, add, sub, path, polygon } from '../../lib/geometry';
+
+interface Props {
+  title: string;
+}
+const { title } = Astro.props;
+
+// Right angle at R, leg a = RQ (right), leg b = RP (up). Squares built
+// outward on both legs; extending their far edges to a meeting point M and
+// carrying the segment M→R over to the hypotenuse produces a third
+// parallelogram — which, for this square-on-square case, turns out to be a
+// square too (verified numerically: |MR| = c exactly, and MR ⟂ PQ).
+const a = 120;
+const b = 160;
+const R = pt(0, 0);
+const Q = pt(a, 0);
+const P = pt(0, -b);
+
+const sqA = [R, Q, add(Q, pt(0, a)), add(R, pt(0, a))];
+const sqB = [R, P, add(P, pt(-b, 0)), add(R, pt(-b, 0))];
+
+const M = pt(-b, a);
+const MR = sub(R, M);
+const P2 = add(P, MR);
+const Q2 = add(Q, MR);
+const sqC = [P, Q, Q2, P2];
+---
+
+<FigurePanel title={title} viewBox="-200 -320 520 480" width={480} height={440}>
+  <polygon points={polygon(sqA)} fill="var(--sq-a)" data-figure-id="sqA" data-kind="fill" style="--base-opacity:0.75"></polygon>
+  <polygon points={polygon(sqB)} fill="var(--sq-b)" data-figure-id="sqB" data-kind="fill" style="--base-opacity:0.75"></polygon>
+  <polygon points={polygon(sqC)} fill="var(--sq-c)" data-figure-id="sqC" data-kind="fill" style="--base-opacity:0.35; --lit-opacity:0.75"></polygon>
+
+  <polygon points={polygon([R, Q, P])} fill="var(--paper)" stroke="var(--ink)" stroke-width="1.6" data-figure-id="triOutline" data-kind="fill" style="--base-opacity:1"></polygon>
+
+  <path d={path([sqA[3], M])} stroke="var(--ink)" stroke-width="1.4" stroke-dasharray="5 4" data-figure-id="extendedA" data-kind="line" style="--base-opacity:0.4; --stroke-lit:2.4"></path>
+  <path d={path([sqB[3], M])} stroke="var(--ink)" stroke-width="1.4" stroke-dasharray="5 4" data-figure-id="extendedB" data-kind="line" style="--base-opacity:0.4; --stroke-lit:2.4"></path>
+
+  <path d={path([M, R])} stroke="var(--ink)" stroke-width="1.8" data-figure-id="segMR" data-kind="line" style="--base-opacity:0.55; --stroke-lit:3"></path>
+
+  <circle cx={M.x} cy={M.y} r="3" fill="var(--ink)"></circle>
+  <circle cx={R.x} cy={R.y} r="3" fill="var(--ink)"></circle>
+  <circle cx={Q.x} cy={Q.y} r="3" fill="var(--ink)"></circle>
+  <circle cx={P.x} cy={P.y} r="3" fill="var(--ink)"></circle>
+
+  <text x={R.x - 14} y={R.y + 20} text-anchor="middle" font-family="Instrument Serif, serif" font-size="17" fill="var(--ink)">R</text>
+  <text x={Q.x + 14} y={Q.y + 20} text-anchor="middle" font-family="Instrument Serif, serif" font-size="17" fill="var(--ink)">Q</text>
+  <text x={P.x - 14} y={P.y - 8} text-anchor="middle" font-family="Instrument Serif, serif" font-size="17" fill="var(--ink)">P</text>
+  <text x={M.x - 16} y={M.y + 6} text-anchor="middle" font-family="Instrument Serif, serif" font-size="17" fill="var(--ink)">M</text>
+
+  <text x={(R.x + Q.x) / 2} y={R.y + 20} text-anchor="middle" font-family="Instrument Serif, serif" font-size="16" font-style="italic" fill="var(--ink)">a</text>
+  <text x={R.x - 18} y={(R.y + P.y) / 2} text-anchor="middle" font-family="Instrument Serif, serif" font-size="16" font-style="italic" fill="var(--ink)">b</text>
+  <text x={(P.x + Q.x) / 2 - 14} y={(P.y + Q.y) / 2 - 6} text-anchor="middle" font-family="Instrument Serif, serif" font-size="16" font-style="italic" fill="var(--ink)">c</text>
+</FigurePanel>

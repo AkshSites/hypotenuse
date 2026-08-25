@@ -18,7 +18,8 @@ export const DIAGRAM_KEYS = [
   'tip-to-tail',
   'ptolemy',
   'differential',
-  'complex',
+  'pappus',
+  'liuhui',
 ] as const;
 
 export const CATEGORIES = [

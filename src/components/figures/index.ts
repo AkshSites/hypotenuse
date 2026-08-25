@@ -12,7 +12,8 @@ import Incircle from './IncircleFigure.astro';
 import TipToTail from './TipToTailFigure.astro';
 import Ptolemy from './PtolemyFigure.astro';
 import Differential from './DifferentialFigure.astro';
-import Complex from './ComplexFigure.astro';
+import Pappus from './PappusFigure.astro';
+import LiuHui from './LiuHuiFigure.astro';
 
 export const FIGURES: Record<string, AstroComponentFactory> = {
   euclid: Euclid,
@@ -28,5 +29,6 @@ export const FIGURES: Record<string, AstroComponentFactory> = {
   'tip-to-tail': TipToTail,
   ptolemy: Ptolemy,
   differential: Differential,
-  complex: Complex,
+  pappus: Pappus,
+  liuhui: LiuHui,
 };

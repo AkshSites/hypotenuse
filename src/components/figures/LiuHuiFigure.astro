@@ -1,0 +1,48 @@
+---
+import FigurePanel from './FigurePanel.astro';
+import SquaresFigure from './SquaresFigure.astro';
+import { rightTriangleLayout, pt, polygon, path } from '../../lib/geometry';
+
+interface Props {
+  title: string;
+}
+const { title } = Astro.props;
+
+const layout = rightTriangleLayout(120, 160);
+
+// squareRP (the smaller leg-square, a=120) runs P -> R -> R+n -> P+n, i.e.
+// corners (0,-120) (0,0) (-120,0) (-120,-120) in the triangle's local frame.
+// Two lines through its center, parallel and perpendicular to the
+// hypotenuse, cut it into four congruent pieces — same family of cut as
+// Perigal's, applied to the smaller square instead of the larger one.
+const center = pt(-60, -60);
+const cutA = [pt(0, -15), pt(-120, -105)]; // parallel to hyp
+const cutB = [pt(-105, 0), pt(-15, -120)]; // perpendicular to hyp
+
+const pieceP = [pt(-15, -120), pt(0, -120), pt(0, -15), center];
+const pieceR = [pt(0, -15), pt(0, 0), pt(-105, 0), center];
+const pieceTL = [pt(-105, 0), pt(-120, 0), pt(-120, -105), center];
+const pieceBL = [pt(-120, -105), pt(-120, -120), pt(-15, -120), center];
+const pieces = [pieceP, pieceR, pieceTL, pieceBL];
+---
+
+<FigurePanel title={title} viewBox="-150 -310 470 500" width={500} height={520}>
+  <SquaresFigure layout={layout} ids={{ a: '', b: 'sqB', c: 'sqC' }} labels={{ R: 'A', P: 'B', Q: 'C' }} />
+
+  {pieces.map((piece, i) => (
+    <polygon
+      points={polygon(piece)}
+      fill={i % 2 === 0 ? 'var(--sq-a)' : 'var(--ink)'}
+      stroke="var(--ink)"
+      stroke-width="1.2"
+      data-figure-id={`piece${i + 1}`}
+      data-kind="fill"
+      style={`--base-opacity:${i % 2 === 0 ? 0.6 : 0.32}; --lit-opacity:0.95`}
+    ></polygon>
+  ))}
+
+  <path d={path(cutA)} stroke="var(--ink)" stroke-width="1.2" opacity="0.7"></path>
+  <path d={path(cutB)} stroke="var(--ink)" stroke-width="1.2" opacity="0.7"></path>
+
+  <circle cx={center.x} cy={center.y} r="3" fill="var(--ink)"></circle>
+</FigurePanel>
