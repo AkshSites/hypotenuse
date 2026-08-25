@@ -2,6 +2,7 @@
 import { render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ShuffleButton from '../../components/ShuffleButton.astro';
+import Button from '../../components/Button.astro';
 import DifficultyPips from '../../components/DifficultyPips.astro';
 import StepList from '../../components/StepList.astro';
 import { FIGURES } from '../../components/figures';
@@ -17,7 +18,19 @@ export async function getStaticPaths() {
 }
 
 const { proof, number } = Astro.props;
-const { title, attribution, category, yearDisplay, difficulty, proposition, steps, source, summary } = proof.data;
+const {
+  title,
+  attribution,
+  category,
+  yearDisplay,
+  difficulty,
+  proposition,
+  steps,
+  source,
+  summary,
+  stepsCollapsed,
+  collapsedCaption,
+} = proof.data;
 const Figure = FIGURES[proof.data.diagram];
 const { Content } = await render(proof);
 const proofNumber = String(number).padStart(3, '0');
@@ -42,7 +55,20 @@ const proofNumber = String(number).padStart(3, '0');
   <section class="proof-body" data-proof-interactive>
     <div class="proof-steps-col">
       <p class="proposition" set:html={renderInlineMath(proposition)} />
-      <StepList steps={steps} />
+
+      {stepsCollapsed && (
+        <div class="reveal-panel" data-reveal-panel>
+          <p class="reveal-caption">{collapsedCaption ?? 'Behold.'}</p>
+          <Button variant="secondary" class="reveal-toggle font-mono" data-reveal-toggle data-show-label="Show the algebra" data-hide-label="Hide the algebra" aria-expanded="false">
+            Show the algebra
+          </Button>
+        </div>
+      )}
+
+      <div class="steps-wrap" data-steps-wrap hidden={stepsCollapsed}>
+        <StepList steps={steps} />
+      </div>
+
       <p class="qed">Therefore c² = a² + b². ∎</p>
       <div class="proof-note">
         <Content />
@@ -52,6 +78,30 @@ const proofNumber = String(number).padStart(3, '0');
     <Figure title={title} />
   </section>
 </BaseLayout>
+
+<script>
+  function initRevealToggles(root: ParentNode) {
+    root.querySelectorAll<HTMLElement>('[data-reveal-panel]').forEach((panel) => {
+      if (panel.dataset.wired === 'true') return;
+      const toggle = panel.querySelector<HTMLButtonElement>('[data-reveal-toggle]');
+      const stepsWrap = panel.nextElementSibling as HTMLElement | null;
+      if (!toggle || !stepsWrap || !stepsWrap.matches('[data-steps-wrap]')) return;
+      panel.dataset.wired = 'true';
+
+      const showLabel = toggle.dataset.showLabel ?? 'Show the algebra';
+      const hideLabel = toggle.dataset.hideLabel ?? 'Hide the algebra';
+
+      toggle.addEventListener('click', () => {
+        const willShow = stepsWrap.hidden;
+        stepsWrap.hidden = !willShow;
+        toggle.textContent = willShow ? hideLabel : showLabel;
+        toggle.setAttribute('aria-expanded', String(willShow));
+      });
+    });
+  }
+  initRevealToggles(document);
+  document.addEventListener('astro:page-load', () => initRevealToggles(document));
+</script>
 
 <style>
   .proof-hero {
@@ -108,6 +158,22 @@ const proofNumber = String(number).padStart(3, '0');
   }
   .proposition :global(.katex) {
     font-size: 1em;
+  }
+  .reveal-panel {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    flex-wrap: wrap;
+    padding: 36px 0 34px 0;
+    border-top: 1px solid var(--hair);
+    border-bottom: 1px solid var(--hair);
+  }
+  .reveal-caption {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 38px;
+    color: var(--ink);
+    flex: 1 1 auto;
   }
   .qed {
     margin-top: 26px;

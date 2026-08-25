@@ -11,6 +11,8 @@ summary: Four triangles spin around a small square inside a bigger one. Bhāskar
 proposition: A square built on the hypotenuse can be cut into four copies of the original right triangle and one small square — and that dissection alone forces $a^2+b^2=c^2$.
 source: "Bijaganita, 1150"
 diagram: bhaskara
+stepsCollapsed: true
+collapsedCaption: "Behold."
 steps:
   - text: "Build a square with side $c$, the hypotenuse. Inside it, place four copies of the right triangle, each hypotenuse lying along one side of the square, each rotated a quarter turn from its neighbor."
     highlights: [sqC, tri1, tri2, tri3, tri4]

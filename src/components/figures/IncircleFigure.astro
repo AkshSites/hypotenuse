@@ -1,0 +1,57 @@
+---
+import FigurePanel from './FigurePanel.astro';
+import { rightTriangleLayout, footOfAltitude, add, scale, polygon, path } from '../../lib/geometry';
+
+interface Props {
+  title: string;
+}
+const { title } = Astro.props;
+
+const layout = rightTriangleLayout(120, 160);
+const { R: A, P: B, Q: C, legRP: legA, legRQ: legB, hyp: legC } = layout;
+
+// Incenter: the vertex-weighted average, weighted by the length of the
+// side opposite each vertex (opposite A is BC=c, opposite B is AC=b,
+// opposite C is AB=a).
+const perimeter = legA + legB + legC;
+const I = scale(add(add(scale(A, legC), scale(B, legB)), scale(C, legA)), 1 / perimeter);
+const r = (legA + legB - legC) / 2;
+
+const tangentAB = footOfAltitude(I, A, B);
+const tangentAC = footOfAltitude(I, A, C);
+const tangentBC = footOfAltitude(I, B, C);
+
+const triIAB = [I, A, B];
+const triIAC = [I, A, C];
+const triIBC = [I, B, C];
+---
+
+<FigurePanel title={title} viewBox="-40 -160 280 300" width={420} height={330}>
+  <polygon points={polygon([A, B, C])} fill="var(--paper)" stroke="var(--ink)" stroke-width="1.6" data-figure-id="triOutline" data-kind="fill" style="--base-opacity:1"></polygon>
+
+  <polygon points={polygon(triIAB)} fill="var(--sq-a)" stroke="var(--ink)" stroke-width="1" data-figure-id="triIAB" data-kind="fill" style="--base-opacity:0; --lit-opacity:0.55"></polygon>
+  <polygon points={polygon(triIAC)} fill="var(--sq-b)" stroke="var(--ink)" stroke-width="1" data-figure-id="triIAC" data-kind="fill" style="--base-opacity:0; --lit-opacity:0.55"></polygon>
+  <polygon points={polygon(triIBC)} fill="var(--sq-c)" stroke="var(--ink)" stroke-width="1" data-figure-id="triIBC" data-kind="fill" style="--base-opacity:0; --lit-opacity:0.55"></polygon>
+
+  <path d={path([I, A])} stroke="var(--ink)" stroke-width="1.2" stroke-dasharray="4 4" data-figure-id="connectors" data-kind="line" style="--base-opacity:0"></path>
+  <path d={path([I, B])} stroke="var(--ink)" stroke-width="1.2" stroke-dasharray="4 4" data-figure-id="connectors" data-kind="line" style="--base-opacity:0"></path>
+  <path d={path([I, C])} stroke="var(--ink)" stroke-width="1.2" stroke-dasharray="4 4" data-figure-id="connectors" data-kind="line" style="--base-opacity:0"></path>
+
+  <path d={path([B, C])} stroke="var(--sq-c)" stroke-width="3" data-figure-id="hypotenuseSide" data-kind="line" style="--base-opacity:0"></path>
+
+  <path d={path([A, tangentAB])} stroke="var(--ink)" stroke-width="3" data-figure-id="legTangentsA" data-kind="line" style="--base-opacity:0"></path>
+  <path d={path([A, tangentAC])} stroke="var(--ink)" stroke-width="3" data-figure-id="legTangentsA" data-kind="line" style="--base-opacity:0"></path>
+
+  <circle cx={I.x} cy={I.y} r={r} fill="none" stroke="var(--ink)" stroke-width="1.6" data-figure-id="incircle" data-kind="line" style="--base-opacity:0.55; --stroke-base:1.6; --stroke-lit:2.6"></circle>
+  <circle cx={I.x} cy={I.y} r="2.4" fill="var(--ink)"></circle>
+
+  <circle cx={tangentAB.x} cy={tangentAB.y} r="2.6" fill="var(--ink)" data-figure-id="tangentAB" data-kind="fill" style="--base-opacity:0.6"></circle>
+  <circle cx={tangentAC.x} cy={tangentAC.y} r="2.6" fill="var(--ink)" data-figure-id="tangentAC" data-kind="fill" style="--base-opacity:0.6"></circle>
+  <circle cx={tangentBC.x} cy={tangentBC.y} r="2.6" fill="var(--ink)" data-figure-id="tangentBC" data-kind="fill" style="--base-opacity:0.6"></circle>
+
+  <text x={A.x - 6} y={A.y - 12} text-anchor="middle" font-family="Instrument Serif, serif" font-size="18" fill="var(--ink)">A</text>
+  <text x={B.x - 14} y={B.y + 4} text-anchor="middle" font-family="Instrument Serif, serif" font-size="18" fill="var(--ink)">B</text>
+  <text x={C.x + 14} y={C.y + 4} text-anchor="middle" font-family="Instrument Serif, serif" font-size="18" fill="var(--ink)">C</text>
+  <text x={I.x + 10} y={I.y - 6} text-anchor="middle" font-family="Instrument Serif, serif" font-size="16" fill="var(--ink-2)">I</text>
+  <text x={(I.x + tangentAB.x) / 2 - 12} y={(I.y + tangentAB.y) / 2} text-anchor="middle" font-family="Instrument Serif, serif" font-size="14" font-style="italic" fill="var(--ink-2)">r</text>
+</FigurePanel>

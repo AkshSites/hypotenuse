@@ -8,6 +8,7 @@ import Perigal from './PerigalFigure.astro';
 import Algebraic from './AlgebraicFigure.astro';
 import Einstein from './EinsteinFigure.astro';
 import DaVinci from './DaVinciFigure.astro';
+import Incircle from './IncircleFigure.astro';
 
 export const FIGURES: Record<string, AstroComponentFactory> = {
   euclid: Euclid,
@@ -19,4 +20,5 @@ export const FIGURES: Record<string, AstroComponentFactory> = {
   algebraic: Algebraic,
   einstein: Einstein,
   davinci: DaVinci,
+  incircle: Incircle,
 };

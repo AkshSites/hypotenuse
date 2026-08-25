@@ -14,6 +14,7 @@ export const DIAGRAM_KEYS = [
   'algebraic',
   'einstein',
   'davinci',
+  'incircle',
 ] as const;
 
 export const CATEGORIES = [
@@ -49,6 +50,12 @@ const proofsCollection = defineCollection({
     source: z.string().optional(),
     diagram: z.enum(DIAGRAM_KEYS),
     steps: z.array(stepSchema).min(1),
+    // When true, the step-by-step walkthrough starts hidden behind a
+    // "show the algebra" toggle instead of being shown by default —
+    // for proofs (like Bhaskara's) whose whole point is that the
+    // diagram needs no explanation.
+    stepsCollapsed: z.boolean().default(false),
+    collapsedCaption: z.string().optional(),
   }),
 });
 
