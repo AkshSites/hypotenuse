@@ -30,6 +30,10 @@ function iconPoints(template: typeof SQUARE_TEMPLATE) {
 ---
 
 <div class="shape-explorer" data-shape-explorer>
+  <button type="button" class="shape-trigger font-mono" data-shape-trigger>
+    Change shape <span class="trigger-current" data-trigger-current>(Square)</span>
+  </button>
+
   <div class="explorer-figure">
     <svg viewBox="-190 -270 420 480" style="overflow:visible" role="img" aria-label="A right triangle with a chosen shape erected on each of its three sides">
       {initialShapes.map((s) => (
@@ -44,10 +48,6 @@ function iconPoints(template: typeof SQUARE_TEMPLATE) {
       <text x={C.x + 14} y={C.y + 4} text-anchor="middle" font-family="Instrument Serif, serif" font-size="18" fill="var(--ink)">C</text>
     </svg>
   </div>
-
-  <button type="button" class="shape-trigger font-mono" data-shape-trigger>
-    Change shape <span class="trigger-current" data-trigger-current>(Square)</span>
-  </button>
 
   <dialog class="shape-modal" data-shape-modal aria-labelledby="shape-modal-title">
     <div class="modal-inner">
@@ -313,17 +313,17 @@ function iconPoints(template: typeof SQUARE_TEMPLATE) {
   .shape-explorer {
     background: var(--paper-2);
     border-radius: 2px;
-    padding: 24px 24px 22px 24px;
+    padding: 18px 24px 22px 24px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 14px;
+    gap: 10px;
   }
 
   .explorer-figure {
     display: flex;
     justify-content: center;
-    padding: 8px 0;
+    padding: 0;
     width: 100%;
   }
   .explorer-figure svg {

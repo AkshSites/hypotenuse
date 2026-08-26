@@ -17,7 +17,7 @@ const triWhole = [A, B, C];
 ---
 
 <div class="einstein-stack">
-<FigurePanel title={title} viewBox="-40 -160 280 300" width={420} height={330}>
+<FigurePanel title={title} viewBox="-30 -140 230 170" width={345} height={255}>
   <polygon points={polygon(triABD)} fill="var(--sq-a)" stroke="var(--ink)" stroke-width="1.2" data-figure-id="triABD" data-kind="fill" style="--base-opacity:0.55; --lit-opacity:0.9"></polygon>
   <polygon points={polygon(triACD)} fill="var(--sq-b)" stroke="var(--ink)" stroke-width="1.2" data-figure-id="triACD" data-kind="fill" style="--base-opacity:0.55; --lit-opacity:0.9"></polygon>
 
@@ -44,6 +44,20 @@ const triWhole = [A, B, C];
   .einstein-stack {
     display: flex;
     flex-direction: column;
-    gap: 28px;
+  }
+  /* Reach into the two child panels so they read as one connected figure —
+     a shared card with an internal seam — rather than two separate cards
+     with a gap between them. */
+  .einstein-stack :global(.figure-panel) {
+    /* Sticky would let the top half float away from the bottom half while
+       scrolling, breaking the one-figure illusion — this pairing scrolls
+       as a single unit instead. */
+    position: static;
+    border-radius: 2px 2px 0 0;
+    padding-bottom: 20px;
+  }
+  .einstein-stack :global(.shape-explorer) {
+    border-radius: 0 0 2px 2px;
+    border-top: 1px solid var(--hair);
   }
 </style>
