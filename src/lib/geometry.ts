@@ -125,6 +125,34 @@ function round(n: number): number {
   return Math.round(n * 100) / 100;
 }
 
+export interface BoundingBox {
+  minX: number;
+  minY: number;
+  width: number;
+  height: number;
+}
+
+/**
+ * The axis-aligned bounding box of a set of points, expanded by `margin`
+ * on every side. Used to frame a diagram's SVG viewBox snugly around
+ * whatever's currently drawn, instead of a fixed box sized for the
+ * largest case and mostly empty for smaller ones.
+ */
+export function boundingBox(points: Point[], margin = 0): BoundingBox {
+  const xs = points.map((p) => p.x);
+  const ys = points.map((p) => p.y);
+  const minX = Math.min(...xs) - margin;
+  const minY = Math.min(...ys) - margin;
+  const maxX = Math.max(...xs) + margin;
+  const maxY = Math.max(...ys) + margin;
+  return { minX, minY, width: maxX - minX, height: maxY - minY };
+}
+
+/** SVG `viewBox` attribute value for a BoundingBox. */
+export function viewBoxString(box: BoundingBox): string {
+  return `${round(box.minX)} ${round(box.minY)} ${round(box.width)} ${round(box.height)}`;
+}
+
 /** SVG `points` attribute value for a closed polygon. */
 export function polygon(points: Point[]): string {
   return points.map((p) => `${round(p.x)},${round(p.y)}`).join(' ');

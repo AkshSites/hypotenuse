@@ -1,7 +1,12 @@
 ---
 import Button from '../Button.astro';
-import { rightTriangleLayout, shapeOnSegment, polygon, pt } from '../../lib/geometry';
+import { rightTriangleLayout, shapeOnSegment, boundingBox, viewBoxString, polygon, pt } from '../../lib/geometry';
 import { SHAPE_PRESETS, SQUARE_TEMPLATE } from '../../lib/shapeTemplates';
+
+// Kept in sync with the same constant in the client <script> below — both
+// need to agree so the server-rendered initial frame doesn't jump the
+// moment client JS takes over.
+const VIEWBOX_MARGIN = 28;
 
 const layout = rightTriangleLayout(120, 160);
 const { R: A, P: B, Q: C } = layout;
@@ -15,10 +20,9 @@ const sides = [
   { key: 'bc', p1: B, p2: C, flip: false, color: 'var(--sq-c)' },
 ] as const;
 
-const initialShapes = sides.map((s) => ({
-  ...s,
-  points: polygon(shapeOnSegment(s.p1, s.p2, SQUARE_TEMPLATE, s.flip)),
-}));
+const initialShapePoints = sides.map((s) => shapeOnSegment(s.p1, s.p2, SQUARE_TEMPLATE, s.flip));
+const initialShapes = sides.map((s, i) => ({ ...s, points: polygon(initialShapePoints[i]) }));
+const initialViewBox = viewBoxString(boundingBox([A, B, C, ...initialShapePoints.flat()], VIEWBOX_MARGIN));
 
 // Small preview icons, built with the same helper that draws the real
 // shapes — an icon is just a shape erected on a 16-unit practice segment.
@@ -35,7 +39,7 @@ function iconPoints(template: typeof SQUARE_TEMPLATE) {
   </button>
 
   <div class="explorer-figure">
-    <svg viewBox="-190 -270 420 480" style="overflow:visible" role="img" aria-label="A right triangle with a chosen shape erected on each of its three sides">
+    <svg data-explorer-svg viewBox={initialViewBox} style="overflow:visible" role="img" aria-label="A right triangle with a chosen shape erected on each of its three sides">
       {initialShapes.map((s) => (
         <polygon points={s.points} fill={s.color} fill-opacity="0.55" stroke={s.color} stroke-width="1.6" data-side={s.key} class="side-shape"></polygon>
       ))}
@@ -105,11 +109,37 @@ function iconPoints(template: typeof SQUARE_TEMPLATE) {
 </div>
 
 <script>
-  import { rightTriangleLayout, shapeOnSegment, pt, type Point, type ShapeTemplate } from '../../lib/geometry';
+  import { rightTriangleLayout, shapeOnSegment, boundingBox, pt, type Point, type ShapeTemplate, type BoundingBox } from '../../lib/geometry';
   import { SHAPE_PRESETS } from '../../lib/shapeTemplates';
+
+  // Kept in sync with the same constant in the frontmatter above.
+  const VIEWBOX_MARGIN = 28;
 
   function pointsAttr(points: Point[]): string {
     return points.map((p) => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(' ');
+  }
+
+  function parseViewBox(value: string | null): BoundingBox {
+    const [minX, minY, width, height] = (value ?? '0 0 100 100').split(/\s+/).map(Number);
+    return { minX, minY, width, height };
+  }
+
+  /** Smoothly tweens the SVG's viewBox from its current box to `to`, so
+   * swapping between very differently sized shapes reframes gradually
+   * instead of jumping. */
+  function animateViewBox(svg: SVGSVGElement, from: BoundingBox, to: BoundingBox, duration = 320) {
+    const start = performance.now();
+    function frame(now: number) {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 3); // ease-out cubic
+      const minX = from.minX + (to.minX - from.minX) * eased;
+      const minY = from.minY + (to.minY - from.minY) * eased;
+      const width = from.width + (to.width - from.width) * eased;
+      const height = from.height + (to.height - from.height) * eased;
+      svg.setAttribute('viewBox', `${minX} ${minY} ${width} ${height}`);
+      if (t < 1) requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
   }
 
   function initExplorer(root: ParentNode) {
@@ -125,15 +155,27 @@ function iconPoints(template: typeof SQUARE_TEMPLATE) {
         { el: section.querySelector<SVGPolygonElement>('[data-side="bc"]')!, p1: B, p2: C, flip: false },
       ].filter((s) => s.el);
 
+      const svg = section.querySelector<SVGSVGElement>('[data-explorer-svg]');
+      let currentBox: BoundingBox | null = svg ? parseViewBox(svg.getAttribute('viewBox')) : null;
+
       function renderTemplate(template: ShapeTemplate) {
-        sideEls.forEach((s) => {
+        const shapePointSets = sideEls.map((s) => shapeOnSegment(s.p1, s.p2, template, s.flip));
+
+        sideEls.forEach((s, i) => {
           s.el.classList.add('is-swapping');
-          const next = pointsAttr(shapeOnSegment(s.p1, s.p2, template, s.flip));
+          const next = pointsAttr(shapePointSets[i]);
           requestAnimationFrame(() => {
             s.el.setAttribute('points', next);
             requestAnimationFrame(() => s.el.classList.remove('is-swapping'));
           });
         });
+
+        if (svg) {
+          const nextBox = boundingBox([A, B, C, ...shapePointSets.flat()], VIEWBOX_MARGIN);
+          if (currentBox) animateViewBox(svg, currentBox, nextBox);
+          else svg.setAttribute('viewBox', `${nextBox.minX} ${nextBox.minY} ${nextBox.width} ${nextBox.height}`);
+          currentBox = nextBox;
+        }
       }
 
       const dialog = section.querySelector<HTMLDialogElement>('[data-shape-modal]');
