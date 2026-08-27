@@ -58,7 +58,7 @@ const disassembleDelay: Record<string, number> = { piece4: 40, piece3: 80, piece
     return (
       <polygon
         points={polygon(piece)}
-        fill={i % 2 === 0 ? 'var(--sq-b)' : 'var(--ink)'}
+        fill={i % 2 === 0 ? 'var(--sq-b)' : 'var(--sq-b-dark)'}
         stroke="var(--ink)"
         stroke-width="1.2"
         data-figure-id={id}

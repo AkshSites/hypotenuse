@@ -21,6 +21,10 @@
   --sq-a-soft: oklch(0.7 0.152 38 / 0.16);
   --sq-b-soft: oklch(0.7 0.152 158 / 0.16);
   --sq-c-soft: oklch(0.7 0.152 264 / 0.16);
+  /* Same hue as --sq-b, just darker — a "dark green" companion shade used
+   * where a diagram needs two tones of B's green instead of green + ink
+   * (e.g. Perigal's alternating dissection pieces). */
+  --sq-b-dark: oklch(0.42 0.1 158);
 
   --font-display: 'Instrument Serif', Georgia, 'Times New Roman', serif;
   --font-body: 'Karla Variable', Karla, system-ui, sans-serif;
@@ -45,6 +49,7 @@
     --sq-a-soft: oklch(0.76 0.15 38 / 0.22);
     --sq-b-soft: oklch(0.76 0.15 158 / 0.22);
     --sq-c-soft: oklch(0.76 0.15 264 / 0.22);
+    --sq-b-dark: oklch(0.48 0.11 158);
 
     color-scheme: dark;
   }
@@ -65,6 +70,7 @@
   --sq-a-soft: oklch(0.76 0.15 38 / 0.22);
   --sq-b-soft: oklch(0.76 0.15 158 / 0.22);
   --sq-c-soft: oklch(0.76 0.15 264 / 0.22);
+  --sq-b-dark: oklch(0.48 0.11 158);
 
   color-scheme: dark;
 }

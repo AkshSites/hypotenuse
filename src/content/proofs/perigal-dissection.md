@@ -23,6 +23,7 @@ steps:
     assemble: true
   - text: "Every scrap of area from the two leg-squares is accounted for inside the hypotenuse's square, and nothing is left over. So $a^2 + b^2 = c^2$."
     highlights: [sqC]
+    assemble: true
 ---
 
 Henry Perigal was a London stockbroker and amateur mathematician who spent decades on dissection proofs; this one was important enough to him that he had it engraved on his own tombstone in East Finchley. The four-piece cut works for any right triangle — the two lines through the center always land the pieces correctly, whatever the ratio of the legs.
