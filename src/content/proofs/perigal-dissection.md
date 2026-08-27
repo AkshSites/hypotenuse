@@ -15,11 +15,12 @@ steps:
   - text: "Of the two squares on the legs, take the larger one — call it $B$ — and mark its center."
     highlights: [sqB]
   - text: "Draw two lines through that center: one parallel to the hypotenuse, one perpendicular to it. Together they cut $B$ into four congruent pieces."
-    highlights: [piece1, piece2, piece3, piece4]
+    highlights: [cut-guide, piece1, piece2, piece3, piece4]
   - text: "The smaller square, $A$, is left whole. It becomes the fifth piece of the puzzle."
     highlights: [sqA]
   - text: "Henry Perigal's discovery: these five pieces — the four quarters of $B$ and the whole of $A$ — slide into place, with no rotation at all, to exactly cover the square on the hypotenuse."
     highlights: [sqA, piece1, piece2, piece3, piece4, sqC]
+    assemble: true
   - text: "Every scrap of area from the two leg-squares is accounted for inside the hypotenuse's square, and nothing is left over. So $a^2 + b^2 = c^2$."
     highlights: [sqC]
 ---

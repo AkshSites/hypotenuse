@@ -4,6 +4,10 @@ import { renderInlineMath } from '../lib/markdown';
 interface Step {
   text: string;
   highlights: string[];
+  /** When true, activating this step also toggles `.is-assembled` on the
+   * proof figure — for diagrams (like Perigal's) where a step's payoff is
+   * pieces sliding into their final position, not just a highlight. */
+  assemble?: boolean;
 }
 interface Props {
   steps: Step[];
@@ -13,7 +17,7 @@ const { steps } = Astro.props;
 
 <ol class="step-list" data-proof-steps>
   {steps.map((step, i) => (
-    <li class="step" data-step data-highlights={step.highlights.join(',')} tabindex="0">
+    <li class="step" data-step data-highlights={step.highlights.join(',')} data-assemble={step.assemble ? 'true' : undefined} tabindex="0">
       <span class="step-num font-mono" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
       <span class="step-text" set:html={renderInlineMath(step.text)} />
     </li>
@@ -42,13 +46,16 @@ const { steps } = Astro.props;
           .split(',')
           .map((s) => s.trim())
           .filter(Boolean);
+        const assemble = step.dataset.assemble === 'true';
         const activate = () => {
           steps.forEach((s) => s.classList.toggle('is-active', s === step));
           setActive(ids);
+          figure.classList.toggle('is-assembled', assemble);
         };
         const deactivate = () => {
           step.classList.remove('is-active');
           setActive(null);
+          figure.classList.remove('is-assembled');
         };
         step.addEventListener('mouseenter', activate);
         step.addEventListener('mouseleave', deactivate);

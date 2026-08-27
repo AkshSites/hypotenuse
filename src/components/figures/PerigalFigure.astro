@@ -1,7 +1,7 @@
 ---
 import FigurePanel from './FigurePanel.astro';
 import SquaresFigure from './SquaresFigure.astro';
-import { rightTriangleLayout, pt, polygon, path } from '../../lib/geometry';
+import { rightTriangleLayout, pt, polygon, path, type Point } from '../../lib/geometry';
 
 interface Props {
   title: string;
@@ -21,25 +21,145 @@ const piece2 = [pt(160, 140), pt(160, 160), pt(20, 160), center];
 const piece3 = [pt(20, 160), pt(0, 160), pt(0, 20), center];
 const piece4 = [pt(0, 20), pt(0, 0), pt(140, 0), center];
 const pieces = [piece1, piece2, piece3, piece4];
+
+// Where each piece lands once slid into the hypotenuse's square — pure
+// translation, no rotation, exactly as Perigal's proof claims. Derived
+// from the shared cut geometry above and checked by construction: each
+// piece's two "cut" edges (length c/2, directions parallel/perpendicular
+// to the hypotenuse) land along the two sides of square C meeting at one
+// of its corners, so a piece's own center-vertex (the point shared by all
+// four quarters) maps exactly onto that corner. Verified computationally
+// — translating every piece by its vector below, plus square A by
+// (200,-80) [hardcoded in this file's <style>, since square A is rendered
+// by <SquaresFigure> and can't carry these as inline custom properties],
+// and taking the union reproduces square C's polygon exactly (zero gap,
+// zero overlap, matching area to the last unit).
+const assemble: Record<string, Point> = {
+  piece1: pt(-80, -200),
+  piece2: pt(40, -360),
+  piece3: pt(200, -240),
+  piece4: pt(80, -80),
+};
+// Staggered so the pieces read as sliding into place one after another —
+// square A (see <style> below), the single whole leftover piece, lands
+// last at 280ms as the payoff.
+const assembleDelay: Record<string, number> = { piece1: 0, piece2: 70, piece3: 140, piece4: 210 };
+// Reverse order and a shorter stagger for sliding back apart — undoing
+// isn't the hero moment, so it should feel quicker and calmer. Square A
+// leads the retreat at 0ms.
+const disassembleDelay: Record<string, number> = { piece4: 40, piece3: 80, piece2: 120, piece1: 160 };
 ---
 
 <FigurePanel title={title} viewBox="-150 -310 470 500" width={500} height={520}>
-  <SquaresFigure layout={layout} ids={{ a: 'sqA', b: '', c: 'sqC' }} labels={{ R: 'A', P: 'B', Q: 'C' }} />
+  <SquaresFigure layout={layout} ids={{ a: 'sqA', b: 'sqB', c: 'sqC' }} labels={{ R: 'A', P: 'B', Q: 'C' }} />
 
-  {pieces.map((piece, i) => (
-    <polygon
-      points={polygon(piece)}
-      fill={i % 2 === 0 ? 'var(--sq-b)' : 'var(--ink)'}
-      stroke="var(--ink)"
-      stroke-width="1.2"
-      data-figure-id={`piece${i + 1}`}
-      data-kind="fill"
-      style={`--base-opacity:${i % 2 === 0 ? 0.55 : 0.3}; --lit-opacity:0.95`}
-    ></polygon>
-  ))}
+  {pieces.map((piece, i) => {
+    const id = `piece${i + 1}`;
+    return (
+      <polygon
+        points={polygon(piece)}
+        fill={i % 2 === 0 ? 'var(--sq-b)' : 'var(--ink)'}
+        stroke="var(--ink)"
+        stroke-width="1.2"
+        data-figure-id={id}
+        data-kind="fill"
+        style={`--base-opacity:${i % 2 === 0 ? 0.55 : 0.3}; --lit-opacity:0.95; --ax:${assemble[id].x}px; --ay:${assemble[id].y}px; --adelay:${assembleDelay[id]}ms; --ddelay:${disassembleDelay[id]}ms`}
+      ></polygon>
+    );
+  })}
 
-  <path d={path(cutA)} stroke="var(--ink)" stroke-width="1.2" opacity="0.7"></path>
-  <path d={path(cutB)} stroke="var(--ink)" stroke-width="1.2" opacity="0.7"></path>
+  {/* <SquaresFigure> paints square A's fill BEFORE square C's, so once A
+      slides (via CSS transform) to sit inside C during assembly, it ends
+      up rendered UNDERNEATH C and disappears — the transform is correct,
+      the paint order isn't. Rather than reordering the shared component
+      (used by 6 other proofs), repaint an identical copy here, after the
+      pieces (and so after <SquaresFigure> entirely) — it shares
+      data-figure-id="sqA" with the original, so the same highlight and
+      transform rules apply to both identically; since they sit pixel-for-
+      pixel on top of each other at every untransformed step, this copy is
+      invisible as a "duplicate" except during assembly, when it's the one
+      that's actually visible on top of C. */}
+  <polygon
+    points={polygon(layout.squareRP)}
+    fill="var(--sq-a)"
+    stroke="var(--ink)"
+    stroke-width="1.3"
+    data-figure-id="sqA"
+    data-kind="fill"
+    style="--base-opacity:0.82"
+  ></polygon>
 
-  <circle cx={center.x} cy={center.y} r="3" fill="var(--ink)"></circle>
+  <g data-figure-id="cut-guide" data-kind="line">
+    <path d={path(cutA)} stroke="var(--ink)" stroke-width="1.2" opacity="0.7"></path>
+    <path d={path(cutB)} stroke="var(--ink)" stroke-width="1.2" opacity="0.7"></path>
+    <circle cx={center.x} cy={center.y} r="3" fill="var(--ink)"></circle>
+  </g>
 </FigurePanel>
+
+<style>
+  /* Pure-translation "slide into place" for the four quarters of B plus
+   * the whole of A — matching Perigal's own claim that no rotation is
+   * needed. Resting-state transition covers the reverse (disassemble)
+   * direction: calmer easing, and un-staggered in reverse order since
+   * undoing isn't the moment to linger on. The assembled-state transition
+   * (below) covers the forward slide: a slight overshoot-then-settle
+   * ("back" easing) for a satisfying snap as each piece docks. */
+  /* NOTE: the whole compound selector is wrapped in one :global() — Astro
+   * scopes a bare `.figure-frame` to THIS component, but that div is
+   * actually rendered by FigurePanel.astro, so a partially-scoped
+   * `.figure-frame :global(...)` selector (fine when FigurePanel styles
+   * its own markup) never matches from here and silently does nothing. */
+  :global(.figure-frame [data-figure-id^='piece']),
+  :global(.figure-frame [data-figure-id='sqA']) {
+    transform: translate(0, 0);
+    transition:
+      opacity 0.3s ease,
+      filter 0.3s ease,
+      stroke-width 0.3s ease,
+      transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transition-delay: var(--ddelay, 0ms);
+  }
+  /* Square A is rendered by <SquaresFigure> (shared by 6 other proofs), so
+   * it never gets the --ax/--ay/--adelay/--ddelay custom properties the
+   * piece polygons above carry inline — those are set per-piece in this
+   * component's own template. Its assemble offset is a fixed constant for
+   * this proof's fixed 120/160/200 triangle, so it's simplest and safest
+   * to give it its own literal rule rather than reaching into a shared
+   * component to inject custom properties it has no other use for. */
+  :global(.figure-frame [data-figure-id='sqA']) {
+    transition-delay: 0ms;
+  }
+
+  :global(.figure-frame [data-figure-id='cut-guide']) {
+    transition: opacity 0.3s ease;
+  }
+  /* !important: FigurePanel's own dimming rule for non-highlighted
+   * data-figure-id elements (.figure-frame[data-active='true']
+   * [data-figure-id]:not(.is-lit)) outranks this on specificity alone
+   * (0,4,0 vs 0,3,0), and would otherwise win and leave these at 28%
+   * opacity instead of fully hidden — neither is highlighted by the
+   * assembly step, since the point is to hide them, not light them up. */
+  :global(.figure-frame.is-assembled [data-figure-id='cut-guide']),
+  :global(.figure-frame.is-assembled [data-figure-id='sqB']) {
+    opacity: 0 !important;
+  }
+
+  :global(.figure-frame.is-assembled [data-figure-id^='piece']) {
+    transform: translate(var(--ax), var(--ay));
+    transition:
+      opacity 0.3s ease,
+      filter 0.3s ease,
+      stroke-width 0.3s ease,
+      transform 0.75s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition-delay: var(--adelay, 0ms);
+  }
+  :global(.figure-frame.is-assembled [data-figure-id='sqA']) {
+    transform: translate(200px, -80px);
+    transition:
+      opacity 0.3s ease,
+      filter 0.3s ease,
+      stroke-width 0.3s ease,
+      transform 0.75s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition-delay: 280ms;
+  }
+</style>

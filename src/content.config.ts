@@ -36,6 +36,10 @@ const stepSchema = z.object({
   // ids of figure elements this step lights up — must match data-figure-id
   // values emitted by the proof's diagram component.
   highlights: z.array(z.string()).default([]),
+  // When true, this step also toggles `.is-assembled` on the figure — for
+  // diagrams where the step's payoff is pieces sliding into their final
+  // position (e.g. Perigal's dissection), not just a highlight.
+  assemble: z.boolean().default(false),
 });
 
 const proofsCollection = defineCollection({
