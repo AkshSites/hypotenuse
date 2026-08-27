@@ -1,12 +1,17 @@
 ---
 import Button from '../Button.astro';
-import { rightTriangleLayout, shapeOnSegment, boundingBox, viewBoxString, polygon, pt } from '../../lib/geometry';
+import { rightTriangleLayout, shapeOnSegment, boundingBoxProportional, viewBoxString, polygon, pt } from '../../lib/geometry';
 import { SHAPE_PRESETS, SQUARE_TEMPLATE } from '../../lib/shapeTemplates';
 
-// Kept in sync with the same constant in the client <script> below — both
-// need to agree so the server-rendered initial frame doesn't jump the
-// moment client JS takes over.
-const VIEWBOX_MARGIN = 28;
+// Kept in sync with the same constants in the client <script> below — all
+// three need to agree so the server-rendered initial frame doesn't jump
+// the moment client JS takes over. The margin is a fraction of the
+// content's own size (see boundingBoxProportional) rather than a fixed
+// number of units, so a shape that shrinks the frame down near the bare
+// triangle's footprint doesn't end up dwarfed by the same padding a much
+// bigger shape gets.
+const VIEWBOX_MARGIN_RATIO = 0.09;
+const VIEWBOX_MIN_MARGIN = 14;
 
 const layout = rightTriangleLayout(120, 160);
 const { R: A, P: B, Q: C } = layout;
@@ -22,7 +27,7 @@ const sides = [
 
 const initialShapePoints = sides.map((s) => shapeOnSegment(s.p1, s.p2, SQUARE_TEMPLATE, s.flip));
 const initialShapes = sides.map((s, i) => ({ ...s, points: polygon(initialShapePoints[i]) }));
-const initialViewBox = viewBoxString(boundingBox([A, B, C, ...initialShapePoints.flat()], VIEWBOX_MARGIN));
+const initialViewBox = viewBoxString(boundingBoxProportional([A, B, C, ...initialShapePoints.flat()], VIEWBOX_MARGIN_RATIO, VIEWBOX_MIN_MARGIN));
 
 // Small preview icons, built with the same helper that draws the real
 // shapes — an icon is just a shape erected on a 16-unit practice segment.
@@ -109,11 +114,12 @@ function iconPoints(template: typeof SQUARE_TEMPLATE) {
 </div>
 
 <script>
-  import { rightTriangleLayout, shapeOnSegment, boundingBox, pt, type Point, type ShapeTemplate, type BoundingBox } from '../../lib/geometry';
+  import { rightTriangleLayout, shapeOnSegment, boundingBoxProportional, pt, type Point, type ShapeTemplate, type BoundingBox } from '../../lib/geometry';
   import { SHAPE_PRESETS } from '../../lib/shapeTemplates';
 
-  // Kept in sync with the same constant in the frontmatter above.
-  const VIEWBOX_MARGIN = 28;
+  // Kept in sync with the same constants in the frontmatter above.
+  const VIEWBOX_MARGIN_RATIO = 0.09;
+  const VIEWBOX_MIN_MARGIN = 14;
 
   function pointsAttr(points: Point[]): string {
     return points.map((p) => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(' ');
@@ -171,7 +177,7 @@ function iconPoints(template: typeof SQUARE_TEMPLATE) {
         });
 
         if (svg) {
-          const nextBox = boundingBox([A, B, C, ...shapePointSets.flat()], VIEWBOX_MARGIN);
+          const nextBox = boundingBoxProportional([A, B, C, ...shapePointSets.flat()], VIEWBOX_MARGIN_RATIO, VIEWBOX_MIN_MARGIN);
           if (currentBox) animateViewBox(svg, currentBox, nextBox);
           else svg.setAttribute('viewBox', `${nextBox.minX} ${nextBox.minY} ${nextBox.width} ${nextBox.height}`);
           currentBox = nextBox;
@@ -241,7 +247,6 @@ function iconPoints(template: typeof SQUARE_TEMPLATE) {
         pad.style.touchAction = 'none';
         const padWidth = 240;
         const padHeight = 200;
-        const baseline = 188;
         let points: Point[] = [];
         let drawing = false;
 
@@ -294,7 +299,12 @@ function iconPoints(template: typeof SQUARE_TEMPLATE) {
             reset();
             return;
           }
-          const template: ShapeTemplate = smoothed.map((p) => pt((p.x - minX) / width, (baseline - p.y) / width));
+          // Base the shape on its OWN bottom edge (maxY), not a fixed pad
+          // coordinate — otherwise a shape drawn without hugging the dashed
+          // baseline hint ends up displaced from it by whatever gap was left,
+          // producing a shape that floats away from the triangle with a long
+          // invisible "stem" once erected on a side.
+          const template: ShapeTemplate = smoothed.map((p) => pt((p.x - minX) / width, (maxY - p.y) / width));
           // Guard against a wildly tall/thin doodle throwing the scale off.
           const maxTY = Math.max(...template.map((p) => Math.abs(p.y)), 0.001);
           const cap = 2.2;

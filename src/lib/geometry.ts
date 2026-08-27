@@ -153,6 +153,23 @@ export function viewBoxString(box: BoundingBox): string {
   return `${round(box.minX)} ${round(box.minY)} ${round(box.width)} ${round(box.height)}`;
 }
 
+/**
+ * Like `boundingBox`, but the margin scales with the content's own size
+ * instead of being a fixed number of units. A flat margin reads as
+ * proportionate for large content but towers over content that has
+ * shrunk down near a single fixed shape's footprint (e.g. a thin
+ * hand-drawn scribble erected on an otherwise-constant triangle) —
+ * scaling the margin to the content keeps the padding looking
+ * consistent across that whole range. `marginRatio` is a fraction of
+ * the raw box's larger dimension; `minMargin` floors the margin so it
+ * doesn't collapse toward zero when the content is nearly a point.
+ */
+export function boundingBoxProportional(points: Point[], marginRatio: number, minMargin = 0): BoundingBox {
+  const raw = boundingBox(points);
+  const margin = Math.max(minMargin, marginRatio * Math.max(raw.width, raw.height));
+  return boundingBox(points, margin);
+}
+
 /** SVG `points` attribute value for a closed polygon. */
 export function polygon(points: Point[]): string {
   return points.map((p) => `${round(p.x)},${round(p.y)}`).join(' ');
